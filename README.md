@@ -1,3 +1,9 @@
+> **Photosensitivity / epilepsy warning:** This project renders rapidly changing
+> neon visuals, recursive feedback, flashes, and high-contrast motion. Do not use
+> it if you are sensitive to flashing lights or motion-triggered visual effects.
+> Stop immediately if you feel discomfort, dizziness, eye strain, nausea, or any
+> seizure-related symptoms.
+
 # Neon Recursion WebGL/WASM V10.5 Fullscreen HUD Hotfix
 
 Version: `webgl-wasm-v10.5-fullscreen-hud-hotfix-2026-06-10`
