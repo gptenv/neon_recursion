@@ -1,9 +1,17 @@
-Neon Recursion WebGL/WASM V10.6
+Neon Recursion WebGL/WASM V10.7
 
 Expected app version marker:
-  webgl-wasm-v10.6-2026-06-10
+  webgl-wasm-v10.7-2026-06-10
 
 Fixed/added:
+- V10.7 layered reactive shader engine with underlay, warped camera layer, previous-frame displacement, overlay masks, and pseudo-alpha compositing.
+- V10.7 shader tuning restores saturated recursive contrast, brighter colour cycling, stronger feedback displacement, and visible audio/video motion while keeping camera structure readable.
+- Up/Down and vertical swipe-hold now control visible visual drive for warp, colour, depth, feedback, and reaction gain.
+- Generated presets use a new 24-value schema for much broader audio/video/reactive variance.
+- The 200 baked presets were regenerated and remapped through a mixed family/mode recipe permutation for stronger adjacent-slot variance.
+- Recipes select distinct audio reaction lanes, motion lanes, shape transforms, mask reactions, and feedback personalities for stronger preset-to-preset behavioral variance.
+- -/= decrement/increment a live randomizer seed offset that reseeds the active recipe and future forged presets.
+- New forged presets use browser entropy plus multiple candidate recipes biased toward recipe-lane distance from existing presets.
 - F toggles browser fullscreen via the Fullscreen API.
 - Pressing F always forces the HUD hidden; it never toggles HUD state.
 - H remains an independent HUD toggle and can show the HUD while fullscreen is active.
@@ -27,3 +35,9 @@ Verification performed in sandbox:
 - verified Space and double-tap/click paths call toggleRecordingGesture()
 - verified recording path combines offscreen manual canvas capture with cloned mixed-audio tracks
 - verified recording start path calls settleDisplayForRecording() before startRecording()
+- verified V10.7 fallback mode starts without shader compile errors
+- verified Up/Down changes drive and single click forges a new layered recipe
+- verified vertical drag changes drive without triggering forge
+- verified high-contrast V10-style layered shader compiles and forge/drive still work
+- verified bounded flow/feedback tuning avoids the uniform noisy wash and keeps baked preset slots visually more distinct
+- verified -/= update the HUD seed offset, reseed the active recipe, and C forges new entropy-backed presets without console errors

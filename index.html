@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Neon Recursion WebGL/WASM V10.6</title>
+  <title>Neon Recursion WebGL/WASM V10.7</title>
   <style>
     html, body { margin:0; height:100%; overflow:hidden; background:#05030a; color:#f4eaff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
     #gl { position:fixed; inset:0; width:100vw; height:100vh; display:block; background:#000; touch-action:none; }
@@ -27,8 +27,8 @@
   <div id="hud"></div>
   <div id="boot">
     <div id="bootCard">
-      <h1>Neon Recursion WebGL/WASM V10.6</h1>
-      <p><b>Controls:</b> 0..9 choose presets in current bank, [ and ] change banks, left-right arrows/swipes step effects, C/click/tap forges a new preset, double-click/double-tap/Space forces fullscreen, hides the HUD, and toggles MP4 recording/download, Ctrl+N nukes current user preset, F toggles fullscreen and hides the HUD, H toggles HUD, Y flips y-axis, X flips x-axis, Z flips z-axis. Enable audio sharing in the screen/tab picker to be reactive to system audio.</p>
+      <h1>Neon Recursion WebGL/WASM V10.7</h1>
+      <p><b>Controls:</b> 0..9 choose presets in current bank, [ and ] change banks, left-right arrows/swipes step effects, Up/Down or swipe-and-hold vertically changes visual drive, - and = reseed the randomizers, C/click/tap forges a new layered reactive preset, double-click/double-tap/Space forces fullscreen, hides the HUD, and toggles MP4 recording/download, Ctrl+N nukes current user preset, F toggles fullscreen and hides the HUD, H toggles HUD, Y flips y-axis, X flips x-axis, Z flips z-axis. Enable audio sharing in the screen/tab picker to be reactive to system audio.</p>
       <div id="controls">
         <button id="startBtn">Start camera + mic + system audio + neon recursion</button>
         <button class="secondary" id="fallbackBtn">Start without devices</button>
@@ -36,7 +36,7 @@
         <button class="secondary" id="importBtn">Import generated presets</button>
         <input id="importFile" type="file" accept="application/json,.json" />
       </div>
-      <p id="bootStatus" class="dim">Version: webgl-wasm-v10.6-2026-06-10</p>
+      <p id="bootStatus" class="dim">Version: webgl-wasm-v10.7-2026-06-10</p>
     </div>
   </div>
   <script src="app.js"></script>

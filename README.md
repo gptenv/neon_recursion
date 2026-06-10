@@ -4,7 +4,7 @@
 > Stop immediately if you feel discomfort, dizziness, eye strain, nausea, or any
 > seizure-related symptoms.
 
-# Neon Recursion WebGL/WASM V10.6
+# Neon Recursion WebGL/WASM V10.7
 
 Launch the Neon Recusion app (click this link): [https://def.s.gy/neon-recursion](https://def.s.gy/neon-recursion)
 
@@ -12,7 +12,7 @@ Expanded URL: [https://gptenv.github.io/neon_recursion/](https://gptenv.github.i
 
 Preview URL: [https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html)
 
-Version: `webgl-wasm-v10.6-2026-06-10`
+Version: `webgl-wasm-v10.7-2026-06-10`
 
 This is the browser-native WebGL/WASM Touchstone port with a Makefile fix for macOS/Homebrew environments where the default `clang` does **not** include a WebAssembly backend.
 
@@ -97,19 +97,29 @@ Y               toggle Y-axis reflection / mirror mode, left-right flip; ON by d
 X               toggle X-axis reflection / vertical flip; ON by default
 Z               toggle Z-axis half-turn / 180-degree camera flip; OFF by default
 R               clear recursive feedback buffer
-Up / Down       intensity
+Up / Down       visual drive: stronger/weaker warping, colour, depth, and reactions
+Vertical swipe
+and hold        continuously raise/lower visual drive
 , / .           feedback memory
-- / =           camera blend
+- / =           decrement/increment the randomizer seed offset
 ```
 
 Generated presets remain saved in browser `localStorage` under the original v10 key for compatibility:
 
 ```text
-neon_recursion_touchstone_v10_presets
+neon_recursion_touchstone_v107_presets
 ```
 
 
-## V10.6 fullscreen and recording behaviour
+## V10.7 layered reactive engine
+
+V10.7 changes generated preset recipes to a new 24-value schema. The random forger now drives layered underlays, camera-feed displacement, previous-frame displacement, overlay masks, chromatic splitting, pseudo-alpha compositing, depth/parallax fields, palette behaviour, and audio/video reaction weighting. The shader keeps the readable V10 camera structure but restores the saturated recursive contrast, brighter colour cycling, stronger feedback displacement, and more obvious audio/video motion. Recipes now select distinct audio reaction lanes, motion lanes, shape transforms, mask reactions, and feedback personalities. The 200 baked presets were regenerated and remapped through a mixed family/mode recipe permutation so adjacent number-key slots produce more distinct looks.
+
+The `-` and `=` keys decrement/increment a live randomizer seed offset. The offset reseeds baked and generated recipes in place and also feeds future forged presets. New forged presets still use browser entropy and are chosen from multiple random candidates biased toward recipe-lane distance from existing presets.
+
+The Up/Down keys and vertical swipe-hold control visual drive. Drive has a broad range and visibly changes warp amplitude, colour pressure, feedback behaviour, depth, overlay intensity, and audio/video reaction gain.
+
+## Fullscreen and recording behaviour
 
 `F` toggles browser fullscreen through the Fullscreen API. Pressing `F` also forces the HUD hidden; it does **not** toggle the HUD state. `H` remains independent and can bring the HUD back while fullscreen is active.
 
