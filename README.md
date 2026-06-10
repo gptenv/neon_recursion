@@ -85,7 +85,11 @@ make rebuild-wasm
 [ / ]           shift number-key bank without changing active preset
 Left / Right    previous / next active preset
 Horizontal swipe previous / next active preset
-C               forge, save, append, bank-jump, and activate a new generated preset
+C / click / tap forge, save, append, bank-jump, and activate a new generated preset
+Double-click /
+double-tap /
+Space           force fullscreen, hide HUD, and toggle MP4/H.264 recording + download
+                with mic plus shared system/tab audio when available
 Ctrl+N          nuke current generated preset only
 F               toggle fullscreen and force HUD hidden
 H               toggle HUD, including while fullscreen is active
@@ -108,3 +112,9 @@ neon_recursion_touchstone_v10_presets
 ## V10.5 fullscreen behaviour
 
 `F` toggles browser fullscreen through the Fullscreen API. Pressing `F` also forces the HUD hidden; it does **not** toggle the HUD state. `H` remains independent and can bring the HUD back while fullscreen is active.
+
+Double-click, double-tap, and Space always request fullscreen, force the HUD hidden, and then toggle canvas recording. Starting uses MediaRecorder MP4/H.264 support when the browser exposes it; stopping downloads the completed `.mp4` and revokes the generated object URL after the download has been initiated, with any remaining URLs revoked on page unload.
+
+Recordings wait for fresh fullscreen-sized app frames before MediaRecorder is created, then copy each rendered WebGL frame into a stable offscreen recording canvas and request capture frames from that canvas. This avoids recording directly from Chrome/macOS's fullscreen canvas compositor path, which can produce recordings that play for the full duration while showing only the first captured frame.
+
+Audio reactivity and recording audio use one Web Audio mix of microphone input plus the browser-provided shared system/tab audio track. Browsers do not expose raw speaker output directly to pages; choose a screen, window, or tab and enable audio sharing in the browser picker when starting the app. Browser and OS support varies: when shared system/tab audio is unavailable or not granted, the app continues with mic audio or synthetic fallback.

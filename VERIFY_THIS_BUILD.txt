@@ -8,6 +8,12 @@ Fixed/added:
 - Pressing F always forces the HUD hidden; it never toggles HUD state.
 - H remains an independent HUD toggle and can show the HUD while fullscreen is active.
 - Fullscreen changes trigger a resize pass.
+- Single click/tap forges the same generated preset that C forges, while swipes do not.
+- Double-click, double-tap, and Space force fullscreen, hide the HUD, and toggle MP4/H.264 canvas recording/download.
+- Recording object URLs are revoked after download initiation and on page unload.
+- Recording copies each WebGL frame into a stable offscreen recording canvas and requests capture frames from that canvas to avoid Chrome/macOS fullscreen-canvas first-frame-only output.
+- Recording start waits for fresh fullscreen-sized app frames after entering fullscreen before MediaRecorder is created.
+- Mic audio and browser-shared system/tab audio are mixed for both audio reactivity and MP4 recording audio.
 - V10.4 axis defaults remain: X=ON, Y=ON, Z=OFF.
 - The bundled touchstone.wasm make hotfix remains.
 - The WebGL sat3() shader hotfix remains.
@@ -18,3 +24,6 @@ Verification performed in sandbox:
 - make
 - verified app.js contains toggleFullscreen(), requestFullscreen(), exitFullscreen(), fullscreenchange
 - verified F key path calls toggleFullscreen() and H key path uses setHUDVisible()
+- verified Space and double-tap/click paths call toggleRecordingGesture()
+- verified recording path combines offscreen manual canvas capture with cloned mixed-audio tracks
+- verified recording start path calls settleDisplayForRecording() before startRecording()

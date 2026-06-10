@@ -2,6 +2,25 @@
 'use strict';
 
 const VERSION = "webgl-wasm-v10.5-fullscreen-hud-hotfix-2026-06-10";
+const TAP_MOVE_PX = 18;
+const DOUBLE_TAP_MS = 320;
+const DOUBLE_TAP_PX = 42;
+const SWIPE_MIN_PX = 80;
+const SWIPE_RATIO = 1.5;
+const RECORDING_FPS = 60;
+const RECORDING_VIDEO_BPS = 16000000;
+const MP4_RECORDING_TYPES_WITH_AUDIO = [
+  'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+  'video/mp4;codecs=avc1.4D401E,mp4a.40.2',
+  'video/mp4;codecs=h264,aac',
+  'video/mp4'
+];
+const MP4_RECORDING_TYPES = [
+  'video/mp4;codecs=avc1.42E01E',
+  'video/mp4;codecs=avc1.4D401E',
+  'video/mp4;codecs=h264',
+  'video/mp4'
+];
 const BASE_EFFECT_NAMES = [
   "Bass Edge Seismograph",
   "Vocal Formant Loom",
@@ -446,6 +465,14 @@ class NeonApp {
     this.wasm = null;
     this.audioCtx = null;
     this.analyser = null;
+    this.audioDest = null;
+    this.audioSources = [];
+    this.audioInputCount = 0;
+    this.cameraStream = null;
+    this.micStream = null;
+    this.systemCaptureStream = null;
+    this.systemAudioStream = null;
+    this.systemAudioPromise = null;
     this.freq = null;
     this.timeData = null;
     this.prevFreq = null;
@@ -455,7 +482,18 @@ class NeonApp {
     this.cameraReady = false;
     this.hudVisible = true;
     this.pointerDown = null;
+    this.lastTap = null;
+    this.pendingTapTimer = 0;
     this.lastSwipe = 0;
+    this.mediaRecorder = null;
+    this.recordingStream = null;
+    this.recordingCanvas = null;
+    this.recordingCtx = null;
+    this.recordingCanvasTrack = null;
+    this.recordedChunks = [];
+    this.recordingBusy = false;
+    this.downloadUrls = new Set();
+    this.frameSerial = 0;
     this.lastT = performance.now();
   }
 
@@ -555,10 +593,15 @@ class NeonApp {
   async start(useDevices=true) {
     if (this.started) return;
     this.started = true; this.useDevices = useDevices;
+    let systemAudioPromise = null;
+    if (useDevices) {
+      this.bootStatus.textContent = 'Choose a screen/tab and enable audio sharing for system audio...';
+      systemAudioPromise = this.requestSystemAudioCapture();
+    }
     this.bootStatus.textContent = 'Loading WASM + WebGL...';
     await this.loadWasm();
     this.initGL();
-    if (useDevices) await this.initDevices();
+    if (useDevices) await this.initDevices(systemAudioPromise);
     else this.bootStatus.textContent = 'Running fallback synthetic camera/audio.';
     this.installEvents();
     this.resize();
@@ -567,34 +610,122 @@ class NeonApp {
     requestAnimationFrame((t) => this.frame(t));
   }
 
-  async initDevices() {
+  async initDevices(systemAudioPromise=null) {
+    if (systemAudioPromise) {
+      this.bootStatus.textContent = 'Waiting for shared system/tab audio selection...';
+      await systemAudioPromise;
+    }
     try {
+      this.bootStatus.textContent = 'Requesting camera + microphone...';
       const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: { echoCancellation:false, noiseSuppression:false, autoGainControl:false } });
       const videoTracks = stream.getVideoTracks();
       if (videoTracks.length) {
         const vstream = new MediaStream(videoTracks);
+        this.cameraStream = vstream;
         this.video.srcObject = vstream;
         await this.video.play();
         this.cameraReady = true;
       }
       const audioTracks = stream.getAudioTracks();
       if (audioTracks.length) {
-        const astream = new MediaStream(audioTracks);
-        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        this.sampleRate = this.audioCtx.sampleRate;
-        const src = this.audioCtx.createMediaStreamSource(astream);
-        this.analyser = this.audioCtx.createAnalyser();
-        this.analyser.fftSize = 2048;
-        this.analyser.smoothingTimeConstant = 0.58;
-        src.connect(this.analyser);
-        this.freq = new Float32Array(this.analyser.frequencyBinCount);
-        this.prevFreq = new Float32Array(this.analyser.frequencyBinCount);
-        this.timeData = new Float32Array(this.analyser.fftSize);
+        this.micStream = new MediaStream(audioTracks);
+        this.watchAudioTracks(this.micStream);
       }
+      this.connectAudioInputs();
     } catch (err) {
       console.warn('Device startup failed; using procedural fallback.', err);
       this.cameraReady = false;
+      this.connectAudioInputs();
     }
+  }
+
+  liveAudioTracks(stream) {
+    return stream ? stream.getAudioTracks().filter(track => track.readyState === 'live') : [];
+  }
+  hasLiveSystemAudio() { return this.liveAudioTracks(this.systemAudioStream).length > 0; }
+  hasLiveMicAudio() { return this.liveAudioTracks(this.micStream).length > 0; }
+  audioInputLabel() {
+    const labels = [];
+    if (this.hasLiveMicAudio()) labels.push('mic');
+    if (this.hasLiveSystemAudio()) labels.push('system');
+    return labels.length ? labels.join('+') : 'synthetic';
+  }
+  watchAudioTracks(stream) {
+    for (const track of this.liveAudioTracks(stream)) {
+      track.addEventListener('ended', () => this.connectAudioInputs(), { once:true });
+    }
+  }
+  ensureAudioGraph() {
+    if (this.audioCtx) return true;
+    const AudioCtor = window.AudioContext || window.webkitAudioContext;
+    if (!AudioCtor) return false;
+    this.audioCtx = new AudioCtor();
+    this.sampleRate = this.audioCtx.sampleRate;
+    this.analyser = this.audioCtx.createAnalyser();
+    this.analyser.fftSize = 2048;
+    this.analyser.smoothingTimeConstant = 0.58;
+    this.audioDest = this.audioCtx.createMediaStreamDestination();
+    this.freq = new Float32Array(this.analyser.frequencyBinCount);
+    this.prevFreq = new Float32Array(this.analyser.frequencyBinCount);
+    this.timeData = new Float32Array(this.analyser.fftSize);
+    return true;
+  }
+  connectAudioInputs() {
+    const streams = [this.micStream, this.systemAudioStream].filter(stream => this.liveAudioTracks(stream).length);
+    this.audioInputCount = streams.length;
+    for (const src of this.audioSources) {
+      try { src.disconnect(); } catch {}
+    }
+    this.audioSources = [];
+    if (!streams.length || !this.ensureAudioGraph()) return;
+    for (const stream of streams) {
+      const src = this.audioCtx.createMediaStreamSource(stream);
+      src.connect(this.analyser);
+      src.connect(this.audioDest);
+      this.audioSources.push(src);
+    }
+    if (this.audioCtx.state === 'suspended') void this.audioCtx.resume().catch(() => {});
+  }
+  async resumeAudioGraph() {
+    if (!this.audioCtx || this.audioCtx.state !== 'suspended') return;
+    try { await this.audioCtx.resume(); } catch (err) { console.warn('Audio resume failed:', err); }
+  }
+  requestSystemAudioCapture() {
+    if (this.hasLiveSystemAudio()) return Promise.resolve(this.systemAudioStream);
+    if (this.systemAudioPromise) return this.systemAudioPromise;
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      console.warn('System/tab audio sharing is not available in this browser.');
+      return Promise.resolve(null);
+    }
+    this.systemAudioPromise = navigator.mediaDevices.getDisplayMedia({
+      video: true,
+      audio: { suppressLocalAudioPlayback:false },
+      preferCurrentTab: false,
+      selfBrowserSurface: 'include',
+      surfaceSwitching: 'include',
+      monitorTypeSurfaces: 'include',
+      systemAudio: 'include',
+      windowAudio: 'system'
+    }).then((stream) => {
+      this.systemCaptureStream = stream;
+      const audioTracks = stream.getAudioTracks();
+      if (!audioTracks.length) {
+        stream.getTracks().forEach(track => track.stop());
+        this.systemCaptureStream = null;
+        console.warn('Shared screen/tab stream did not include audio. Enable audio sharing in the browser prompt to include system audio.');
+        return null;
+      }
+      this.systemAudioStream = new MediaStream(audioTracks);
+      this.watchAudioTracks(this.systemAudioStream);
+      this.connectAudioInputs();
+      return this.systemAudioStream;
+    }).catch((err) => {
+      console.warn('System/tab audio sharing was not started:', err);
+      return null;
+    }).finally(() => {
+      this.systemAudioPromise = null;
+    });
+    return this.systemAudioPromise;
   }
 
   compile(type, src) {
@@ -650,16 +781,15 @@ class NeonApp {
     addEventListener('resize', () => this.resize());
     addEventListener('fullscreenchange', () => this.resize());
     addEventListener('keydown', (ev) => this.onKey(ev));
-    this.canvas.addEventListener('pointerdown', (ev) => { this.pointerDown = {x:ev.clientX,y:ev.clientY,t:performance.now()}; });
-    this.canvas.addEventListener('pointerup', (ev) => {
-      if (!this.pointerDown) return;
-      const dx=ev.clientX-this.pointerDown.x, dy=ev.clientY-this.pointerDown.y, now=performance.now();
-      if (Math.abs(dx)>80 && Math.abs(dx)>Math.abs(dy)*1.5 && now-this.lastSwipe>180) { dx<0 ? this.nextEffect() : this.prevEffect(); this.lastSwipe=now; }
-      this.pointerDown=null;
-    });
+    addEventListener('pagehide', () => this.revokeDownloadUrls());
+    addEventListener('beforeunload', () => this.revokeDownloadUrls());
+    this.canvas.addEventListener('pointerdown', (ev) => this.onPointerDown(ev));
+    this.canvas.addEventListener('pointerup', (ev) => this.onPointerUp(ev));
+    this.canvas.addEventListener('pointercancel', (ev) => this.onPointerCancel(ev));
   }
   onKey(ev) {
     const k=ev.key;
+    if (k===' ' || ev.code==='Space') { ev.preventDefault(); if (!ev.repeat) void this.toggleRecordingGesture(); return; }
     if (k==='h' || k==='H') { ev.preventDefault(); this.setHUDVisible(!this.hudVisible); return; }
     if (k==='f' || k==='F') { ev.preventDefault(); void this.toggleFullscreen(); return; }
     if ((ev.ctrlKey || ev.metaKey) && (k==='n' || k==='N')) { ev.preventDefault(); this.nukeCurrent(); return; }
@@ -680,10 +810,98 @@ class NeonApp {
     if (k==='r' || k==='R') { this.clearFeedback(); return; }
     if (/^[0-9]$/.test(k)) { ev.preventDefault(); const n = k==='0' ? 9 : Number(k)-1; this.selectBankSlot(n); return; }
   }
+  onPointerDown(ev) {
+    if (ev.pointerType === 'mouse' && ev.button !== 0) return;
+    this.pointerDown = { id:ev.pointerId, x:ev.clientX, y:ev.clientY, t:performance.now() };
+    try { this.canvas.setPointerCapture(ev.pointerId); } catch {}
+    ev.preventDefault();
+  }
+  onPointerUp(ev) {
+    const down = this.pointerDown;
+    if (!down || down.id !== ev.pointerId) return;
+    const dx=ev.clientX-down.x, dy=ev.clientY-down.y, now=performance.now();
+    const adx=Math.abs(dx), ady=Math.abs(dy), move=Math.hypot(dx,dy);
+    this.pointerDown = null;
+    try { this.canvas.releasePointerCapture(ev.pointerId); } catch {}
+    ev.preventDefault();
+
+    const horizontalSwipe = adx > SWIPE_MIN_PX && adx > ady * SWIPE_RATIO;
+    const verticalSwipe = ady > SWIPE_MIN_PX && ady > adx * SWIPE_RATIO;
+    if (horizontalSwipe) {
+      if (now-this.lastSwipe>180) { dx<0 ? this.nextEffect() : this.prevEffect(); this.lastSwipe=now; }
+      return;
+    }
+    if (verticalSwipe || move > TAP_MOVE_PX) return;
+
+    this.onTap(ev.clientX, ev.clientY, now);
+  }
+  onPointerCancel(ev) {
+    if (this.pointerDown?.id === ev.pointerId) this.pointerDown = null;
+  }
+  clearPendingTap() {
+    if (!this.pendingTapTimer) return;
+    clearTimeout(this.pendingTapTimer);
+    this.pendingTapTimer = 0;
+  }
+  onTap(x, y, now) {
+    const last = this.lastTap;
+    if (last && now-last.t <= DOUBLE_TAP_MS && Math.hypot(x-last.x, y-last.y) <= DOUBLE_TAP_PX) {
+      this.clearPendingTap();
+      this.lastTap = null;
+      void this.toggleRecordingGesture();
+      return;
+    }
+    this.lastTap = { x, y, t:now };
+    this.clearPendingTap();
+    this.pendingTapTimer = setTimeout(() => {
+      this.pendingTapTimer = 0;
+      this.lastTap = null;
+      this.forgePreset();
+    }, DOUBLE_TAP_MS);
+  }
   selectBankSlot(n) { const e=this.keyBank*BANK_SIZE+n; if (e < this.totalEffects()) { this.effect=e; this.updateTitle(); } }
   setHUDVisible(visible) {
     this.hudVisible = !!visible;
     this.hud.classList.toggle('hidden', !this.hudVisible);
+  }
+  async requestFullscreenMode() {
+    if (document.fullscreenElement) { this.resize(); return; }
+    const target = document.documentElement;
+    if (!target.requestFullscreen) return;
+    try {
+      await target.requestFullscreen({ navigationUI: 'hide' });
+    } catch (_optionsErr) {
+      await target.requestFullscreen();
+    }
+    this.resize();
+  }
+  async forceFullscreen() {
+    this.setHUDVisible(false);
+    try {
+      await this.requestFullscreenMode();
+    } catch (err) {
+      console.warn('Fullscreen request failed:', err);
+    }
+  }
+  waitForRenderedFrames(count=2, timeoutMs=900) {
+    const startFrame = this.frameSerial;
+    const deadline = performance.now() + timeoutMs;
+    return new Promise((resolve) => {
+      const check = () => {
+        if (this.frameSerial - startFrame >= count || performance.now() >= deadline) {
+          resolve();
+          return;
+        }
+        requestAnimationFrame(check);
+      };
+      requestAnimationFrame(check);
+    });
+  }
+  async settleDisplayForRecording(wasFullscreen) {
+    this.resize();
+    await this.waitForRenderedFrames(wasFullscreen ? 1 : 3);
+    this.resize();
+    await this.waitForRenderedFrames(1);
   }
   async toggleFullscreen() {
     // F means: change fullscreen state and force the HUD off; never toggle HUD here.
@@ -691,13 +909,7 @@ class NeonApp {
     this.setHUDVisible(false);
     try {
       if (!document.fullscreenElement) {
-        const target = document.documentElement;
-        if (!target.requestFullscreen) return;
-        try {
-          await target.requestFullscreen({ navigationUI: 'hide' });
-        } catch (_optionsErr) {
-          await target.requestFullscreen();
-        }
+        await this.requestFullscreenMode();
       } else if (document.exitFullscreen) {
         await document.exitFullscreen();
       }
@@ -705,6 +917,183 @@ class NeonApp {
       console.warn('Fullscreen toggle failed:', err);
     }
     this.resize();
+  }
+  isRecording() { return this.mediaRecorder && this.mediaRecorder.state !== 'inactive'; }
+  recordingMimeType(includeAudio=false) {
+    if (!window.MediaRecorder) return '';
+    const types = includeAudio ? MP4_RECORDING_TYPES_WITH_AUDIO : MP4_RECORDING_TYPES;
+    return types.find(type => !MediaRecorder.isTypeSupported || MediaRecorder.isTypeSupported(type)) || '';
+  }
+  async toggleRecordingGesture() {
+    if (this.recordingBusy) return;
+    this.recordingBusy = true;
+    const willStopRecording = this.isRecording();
+    const wasFullscreen = !!document.fullscreenElement;
+    const fullscreenPromise = this.forceFullscreen();
+    const systemAudioPromise = !willStopRecording && this.useDevices && !this.hasLiveSystemAudio() ? this.requestSystemAudioCapture() : null;
+    try {
+      await fullscreenPromise;
+      if (systemAudioPromise) await systemAudioPromise;
+      await this.resumeAudioGraph();
+      if (willStopRecording) await this.stopRecording();
+      else {
+        await this.settleDisplayForRecording(wasFullscreen);
+        await this.startRecording();
+      }
+    } finally {
+      this.recordingBusy = false;
+    }
+  }
+  ensureRecordingCanvas() {
+    if (this.recordingCanvas) return this.recordingCanvas;
+    const canvas = document.createElement('canvas');
+    canvas.setAttribute('aria-hidden', 'true');
+    canvas.style.cssText = 'position:fixed;left:-10000px;top:-10000px;width:1px;height:1px;opacity:0;pointer-events:none;';
+    document.body.appendChild(canvas);
+    this.recordingCanvas = canvas;
+    this.recordingCtx = canvas.getContext('2d', { alpha:false });
+    return canvas;
+  }
+  syncRecordingCanvasSize() {
+    const canvas = this.ensureRecordingCanvas();
+    const even = (n) => Math.max(2, Math.floor(n / 2) * 2);
+    const w = even(this.canvas.width);
+    const h = even(this.canvas.height);
+    if (canvas.width !== w) canvas.width = w;
+    if (canvas.height !== h) canvas.height = h;
+  }
+  copyFrameToRecordingCanvas() {
+    if (!this.recordingCanvas || !this.recordingCtx) return false;
+    try {
+      if (this.gl) this.gl.flush();
+      this.recordingCtx.drawImage(this.canvas, 0, 0, this.recordingCanvas.width, this.recordingCanvas.height);
+      return true;
+    } catch (err) {
+      console.warn('Unable to copy display canvas into recording canvas:', err);
+      return false;
+    }
+  }
+  captureCanvasRecordingStream() {
+    this.syncRecordingCanvasSize();
+    this.copyFrameToRecordingCanvas();
+    let videoStream = this.recordingCanvas.captureStream(0);
+    let videoTrack = videoStream.getVideoTracks()[0] || null;
+    if (!videoTrack || typeof videoTrack.requestFrame !== 'function') {
+      videoStream.getTracks().forEach(track => track.stop());
+      videoStream = this.recordingCanvas.captureStream(RECORDING_FPS);
+      videoTrack = videoStream.getVideoTracks()[0] || null;
+      this.recordingCanvasTrack = null;
+    } else {
+      this.recordingCanvasTrack = videoTrack;
+    }
+    return { videoStream, videoTrack };
+  }
+  recordingAudioTracks() {
+    this.connectAudioInputs();
+    if (!this.audioDest || !this.audioInputCount) return [];
+    return this.audioDest.stream.getAudioTracks()
+      .filter(track => track.readyState === 'live')
+      .map(track => track.clone());
+  }
+  requestRecordingFrame() {
+    const track = this.recordingCanvasTrack;
+    if (!track || track.readyState !== 'live' || typeof track.requestFrame !== 'function') return;
+    try { track.requestFrame(); }
+    catch (err) {
+      console.warn('Manual canvas capture frame request failed:', err);
+      this.recordingCanvasTrack = null;
+    }
+  }
+  async startRecording() {
+    if (this.isRecording()) return;
+    if (!this.canvas.captureStream || !window.MediaRecorder) {
+      console.warn('MP4 recording is not available in this browser.');
+      return;
+    }
+    await this.resumeAudioGraph();
+    const { videoStream, videoTrack } = this.captureCanvasRecordingStream();
+    if (!videoTrack) {
+      videoStream.getTracks().forEach(track => track.stop());
+      console.warn('Canvas recording did not provide a video track.');
+      return;
+    }
+    const audioTracks = this.recordingAudioTracks();
+    const stream = new MediaStream([...videoStream.getVideoTracks(), ...audioTracks]);
+    const mimeType = this.recordingMimeType(audioTracks.length > 0);
+    if (!mimeType) {
+      console.warn('This browser does not report MediaRecorder MP4/H.264 support.');
+      stream.getTracks().forEach(track => track.stop());
+      this.recordingCanvasTrack = null;
+      return;
+    }
+    this.recordedChunks = [];
+    let recorder;
+    try {
+      recorder = new MediaRecorder(stream, { mimeType, videoBitsPerSecond: RECORDING_VIDEO_BPS });
+    } catch (err) {
+      stream.getTracks().forEach(track => track.stop());
+      this.recordingCanvasTrack = null;
+      console.warn('Unable to start MP4/H.264 recording:', err);
+      return;
+    }
+    this.recordingStream = stream;
+    this.mediaRecorder = recorder;
+    recorder.addEventListener('dataavailable', (ev) => {
+      if (ev.data && ev.data.size) this.recordedChunks.push(ev.data);
+    });
+    recorder.addEventListener('stop', () => this.finishRecordingDownload(mimeType, stream), { once:true });
+    recorder.addEventListener('error', (ev) => console.warn('Recording error:', ev.error || ev));
+    recorder.start(1000);
+    this.requestRecordingFrame();
+    this.bankFlash = 1.0;
+  }
+  stopRecording() {
+    const recorder = this.mediaRecorder;
+    if (!recorder || recorder.state === 'inactive') return Promise.resolve();
+    return new Promise((resolve) => {
+      const done = () => resolve();
+      recorder.addEventListener('stop', done, { once:true });
+      try { recorder.requestData(); } catch {}
+      try {
+        recorder.stop();
+      } catch (err) {
+        recorder.removeEventListener('stop', done);
+        console.warn('Unable to stop recording cleanly:', err);
+        resolve();
+      }
+    });
+  }
+  finishRecordingDownload(mimeType, stream) {
+    stream.getTracks().forEach(track => track.stop());
+    this.recordingStream = null;
+    this.recordingCanvasTrack = null;
+    this.mediaRecorder = null;
+    const chunks = this.recordedChunks;
+    this.recordedChunks = [];
+    if (!chunks.length) {
+      console.warn('Recording stopped without producing video data.');
+      return;
+    }
+    const blob = new Blob(chunks, { type:mimeType || 'video/mp4' });
+    const url = URL.createObjectURL(blob);
+    this.downloadUrls.add(url);
+    const a = document.createElement('a');
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    a.href = url;
+    a.download = `neon-recursion-${stamp}.mp4`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => this.revokeDownloadUrl(url), 30000);
+  }
+  revokeDownloadUrl(url) {
+    if (!this.downloadUrls.delete(url)) return;
+    URL.revokeObjectURL(url);
+  }
+  revokeDownloadUrls() {
+    for (const url of this.downloadUrls) URL.revokeObjectURL(url);
+    this.downloadUrls.clear();
   }
   shiftBank(d) { this.keyBank = (this.keyBank + d + this.bankCount()) % this.bankCount(); this.bankFlash = 1.0; }
   nextEffect() { this.effect=(this.effect+1)%this.totalEffects(); this.keyBank=Math.floor(this.effect/BANK_SIZE); this.bankFlash=.45; this.updateTitle(); }
@@ -714,7 +1103,7 @@ class NeonApp {
 
   updateAudio(t) {
     const a = this.audio;
-    if (!this.analyser) {
+    if (!this.analyser || !this.audioInputCount) {
       const tt=t*.001;
       const vals=[.15+.15*Math.sin(tt*1.1), .2+.2*Math.sin(tt*1.7), .2+.15*Math.sin(tt*2.1), .22+.12*Math.sin(tt*2.7), .18+.15*Math.sin(tt*3.1), .14+.16*Math.sin(tt*4.3), .1+.1*Math.sin(tt*5.1), .5+.25*Math.sin(tt*.4), .5+.5*Math.sin(tt*.22), .2+.2*Math.max(0,Math.sin(tt*3.0)), .2+.7*Math.pow(Math.max(0,Math.sin(tt*1.6)),8), .5+.5*Math.sin(tt*1.6), .5, .25+.2*Math.sin(tt*2.2), .25, .4];
       for(let i=0;i<16;i++) a[i]=Math.max(0,Math.min(1,vals[i]));
@@ -789,6 +1178,11 @@ class NeonApp {
     gl.useProgram(this.screenProg);
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.fbTex[this.write]); gl.uniform1i(this.screenLoc.uTex,0); gl.uniform1f(this.screenLoc.uTime,t*.001); gl.uniform1f(this.screenLoc.uBankFlash,this.bankFlash);
     gl.drawArrays(gl.TRIANGLE_STRIP,0,4);
+    if (this.recordingCanvasTrack) {
+      this.copyFrameToRecordingCanvas();
+      this.requestRecordingFrame();
+    }
+    this.frameSerial++;
     [this.read,this.write]=[this.write,this.read];
     this.updateHUD();
     requestAnimationFrame((tt) => this.frame(tt));
@@ -796,7 +1190,8 @@ class NeonApp {
   updateHUD() {
     if (!this.hudVisible) return;
     const b0=this.keyBank*BANK_SIZE+1, b1=Math.min(this.totalEffects(),b0+9);
-    this.hud.innerHTML = `<b>${VERSION}</b><br>${this.effect+1}/${this.totalEffects()}: ${this.currentName()}<br><span class="dim">Number keys:</span> ${b0}..${b1} &nbsp; <span class="dim">generated:</span> ${this.userPresets.length}<br><span class="dim">audio:</span> bass ${this.audioSmooth[1].toFixed(2)} mid ${this.audioSmooth[3].toFixed(2)} treble ${this.audioSmooth[5].toFixed(2)} flux ${this.audioSmooth[9].toFixed(2)} rhythm ${this.audioSmooth[11].toFixed(2)}<br><span class="dim">C forge, Ctrl+N nuke, [/] banks, F fullscreen, X/Y/Z flips, H HUD</span>`;
+    const rec = this.isRecording() ? ' &nbsp; <span class="dim">recording:</span> MP4' : '';
+    this.hud.innerHTML = `<b>${VERSION}</b><br>${this.effect+1}/${this.totalEffects()}: ${this.currentName()}<br><span class="dim">Number keys:</span> ${b0}..${b1} &nbsp; <span class="dim">generated:</span> ${this.userPresets.length}${rec}<br><span class="dim">audio ${this.audioInputLabel()}:</span> bass ${this.audioSmooth[1].toFixed(2)} mid ${this.audioSmooth[3].toFixed(2)} treble ${this.audioSmooth[5].toFixed(2)} flux ${this.audioSmooth[9].toFixed(2)} rhythm ${this.audioSmooth[11].toFixed(2)}<br><span class="dim">Click/tap or C forge, double/Space MP4 rec, Ctrl+N nuke, [/] banks, F fullscreen, X/Y/Z flips, H HUD</span>`;
   }
 }
 
