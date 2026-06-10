@@ -1,0 +1,20 @@
+Neon Recursion WebGL/WASM V10.5 Fullscreen HUD Hotfix
+
+Expected app version marker:
+  webgl-wasm-v10.5-fullscreen-hud-hotfix-2026-06-10
+
+Fixed/added:
+- F toggles browser fullscreen via the Fullscreen API.
+- Pressing F always forces the HUD hidden; it never toggles HUD state.
+- H remains an independent HUD toggle and can show the HUD while fullscreen is active.
+- Fullscreen changes trigger a resize pass.
+- V10.4 axis defaults remain: X=ON, Y=ON, Z=OFF.
+- The bundled touchstone.wasm make hotfix remains.
+- The WebGL sat3() shader hotfix remains.
+
+Verification performed in sandbox:
+- node --check app.js
+- make clean
+- make
+- verified app.js contains toggleFullscreen(), requestFullscreen(), exitFullscreen(), fullscreenchange
+- verified F key path calls toggleFullscreen() and H key path uses setHUDVisible()

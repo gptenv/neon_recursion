@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Neon Recursion WebGL/WASM V10.5</title>
+  <style>
+    html, body { margin:0; height:100%; overflow:hidden; background:#05030a; color:#f4eaff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; }
+    #gl { position:fixed; inset:0; width:100vw; height:100vh; display:block; background:#000; touch-action:none; }
+    #boot { position:fixed; inset:0; display:grid; place-items:center; background: radial-gradient(circle at 50% 35%, rgba(80,20,140,.45), rgba(0,0,0,.92)); z-index:5; }
+    #bootCard { width:min(720px, calc(100vw - 36px)); border:1px solid rgba(255,255,255,.18); border-radius:18px; padding:24px; background:rgba(5,3,12,.78); box-shadow:0 18px 70px rgba(0,0,0,.45); backdrop-filter: blur(12px); }
+    h1 { margin:0 0 8px; font-size:clamp(24px, 4vw, 42px); letter-spacing:-.04em; }
+    p { line-height:1.45; color:#dccdf4; }
+    button { font:inherit; cursor:pointer; border:0; border-radius:12px; padding:12px 16px; color:#13051e; background:#f3d7ff; box-shadow:0 0 24px rgba(220,130,255,.26); }
+    button.secondary { background:#211430; color:#eadfff; border:1px solid rgba(255,255,255,.16); box-shadow:none; }
+    #hud { position:fixed; left:12px; top:12px; padding:10px 12px; border-radius:12px; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.12); color:#fff; font-size:12px; line-height:1.35; min-width:300px; pointer-events:none; user-select:none; text-shadow:0 1px 2px #000; }
+    #hud.hidden { display:none; }
+    #hud .dim { color:#bdaed1; }
+    #controls { display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:16px; }
+    #importFile { display:none; }
+    a { color:#f2c8ff; }
+  </style>
+</head>
+<body>
+  <canvas id="gl"></canvas>
+  <video id="camera" playsinline muted style="display:none"></video>
+  <div id="hud"></div>
+  <div id="boot">
+    <div id="bootCard">
+      <h1>Neon Recursion WebGL/WASM V10.5</h1>
+      <p>A browser port of the V9.1 Touchstone build: WebGL2 recursive feedback, webcam texture input, Web Audio spectral analysis, and a tiny WASM Touchstone forge for deterministic generated presets.</p>
+      <p><b>Controls:</b> 1..9/0 choose presets in current bank, [ and ] change banks, arrows/swipes step effects, C forges a new preset, Ctrl+N nukes generated presets, F toggles fullscreen and hides the HUD, H toggles HUD, Y toggles mirror mode, X toggles vertical orientation, Z toggles 180-degree camera flip.</p>
+      <div id="controls">
+        <button id="startBtn">Start camera + mic + neon goblin</button>
+        <button class="secondary" id="fallbackBtn">Start without devices</button>
+        <button class="secondary" id="exportBtn">Export generated presets</button>
+        <button class="secondary" id="importBtn">Import generated presets</button>
+        <input id="importFile" type="file" accept="application/json,.json" />
+      </div>
+      <p id="bootStatus" class="dim">Version: webgl-wasm-v10.5-fullscreen-hud-hotfix-2026-06-10</p>
+    </div>
+  </div>
+  <script src="app.js"></script>
+</body>
+</html>
