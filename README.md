@@ -6,6 +6,8 @@
 
 # Neon Recursion WebGL/WASM V10.5 Fullscreen HUD Hotfix
 
+Use the app by clicking this link: [https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html)
+
 Version: `webgl-wasm-v10.5-fullscreen-hud-hotfix-2026-06-10`
 
 This is the browser-native WebGL/WASM Touchstone port with a Makefile fix for macOS/Homebrew environments where the default `clang` does **not** include a WebAssembly backend.
