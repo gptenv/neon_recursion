@@ -4,7 +4,7 @@
 > Stop immediately if you feel discomfort, dizziness, eye strain, nausea, or any
 > seizure-related symptoms.
 
-# Neon Recursion WebGL/WASM V10.5
+# Neon Recursion WebGL/WASM V10.6
 
 Launch the Neon Recusion app (click this link): [https://def.s.gy/neon-recursion](https://def.s.gy/neon-recursion)
 
@@ -12,7 +12,7 @@ Expanded URL: [https://gptenv.github.io/neon_recursion/](https://gptenv.github.i
 
 Preview URL: [https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html)
 
-Version: `webgl-wasm-v10.5-fullscreen-hud-hotfix-2026-06-10`
+Version: `webgl-wasm-v10.6-2026-06-10`
 
 This is the browser-native WebGL/WASM Touchstone port with a Makefile fix for macOS/Homebrew environments where the default `clang` does **not** include a WebAssembly backend.
 
@@ -109,7 +109,7 @@ neon_recursion_touchstone_v10_presets
 ```
 
 
-## V10.5 fullscreen behaviour
+## V10.6 fullscreen and recording behaviour
 
 `F` toggles browser fullscreen through the Fullscreen API. Pressing `F` also forces the HUD hidden; it does **not** toggle the HUD state. `H` remains independent and can bring the HUD back while fullscreen is active.
 

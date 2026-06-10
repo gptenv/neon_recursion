@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 
-const VERSION = "webgl-wasm-v10.5-fullscreen-hud-hotfix-2026-06-10";
+const VERSION = "webgl-wasm-v10.6-2026-06-10";
 const TAP_MOVE_PX = 18;
 const DOUBLE_TAP_MS = 320;
 const DOUBLE_TAP_PX = 42;
@@ -1099,7 +1099,7 @@ class NeonApp {
   nextEffect() { this.effect=(this.effect+1)%this.totalEffects(); this.keyBank=Math.floor(this.effect/BANK_SIZE); this.bankFlash=.45; this.updateTitle(); }
   prevEffect() { this.effect=(this.effect-1+this.totalEffects())%this.totalEffects(); this.keyBank=Math.floor(this.effect/BANK_SIZE); this.bankFlash=.45; this.updateTitle(); }
   clearFeedback() { if (!this.gl || !this.fbos) return; const gl=this.gl; for (const f of this.fbos) { gl.bindFramebuffer(gl.FRAMEBUFFER,f); gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT); } gl.bindFramebuffer(gl.FRAMEBUFFER,null); }
-  updateTitle() { document.title = `Neon V10 ${this.effect+1}/${this.totalEffects()} — ${this.currentName()}`; }
+  updateTitle() { document.title = `Neon V10.6 ${this.effect+1}/${this.totalEffects()} — ${this.currentName()}`; }
 
   updateAudio(t) {
     const a = this.audio;

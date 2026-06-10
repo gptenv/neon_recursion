@@ -1,7 +1,7 @@
-Neon Recursion WebGL/WASM V10.5 Fullscreen HUD Hotfix
+Neon Recursion WebGL/WASM V10.6
 
 Expected app version marker:
-  webgl-wasm-v10.5-fullscreen-hud-hotfix-2026-06-10
+  webgl-wasm-v10.6-2026-06-10
 
 Fixed/added:
 - F toggles browser fullscreen via the Fullscreen API.
@@ -14,7 +14,7 @@ Fixed/added:
 - Recording copies each WebGL frame into a stable offscreen recording canvas and requests capture frames from that canvas to avoid Chrome/macOS fullscreen-canvas first-frame-only output.
 - Recording start waits for fresh fullscreen-sized app frames after entering fullscreen before MediaRecorder is created.
 - Mic audio and browser-shared system/tab audio are mixed for both audio reactivity and MP4 recording audio.
-- V10.4 axis defaults remain: X=ON, Y=ON, Z=OFF.
+- Axis defaults remain: X=ON, Y=ON, Z=OFF.
 - The bundled touchstone.wasm make hotfix remains.
 - The WebGL sat3() shader hotfix remains.
 

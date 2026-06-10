@@ -1,4 +1,4 @@
-# Neon Recursion WebGL/WASM V10.1 Makefile
+# Neon Recursion WebGL/WASM V10.6 Makefile
 #
 # The release tarball ships with a prebuilt touchstone.wasm.  Normal users do
 # not need a wasm-capable compiler, and `make clean && make` must keep working
