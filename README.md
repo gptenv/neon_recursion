@@ -6,9 +6,11 @@
 
 # Neon Recursion WebGL/WASM V10.5
 
-Launch the Neon Recusion app (click this link): [https://def.s.gy/neon](https://def.s.gy/neon)
+Launch the Neon Recusion app (click this link): [https://def.s.gy/neon-recursion](https://def.s.gy/neon-recursion)
 
-Expanded URL: [https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html)
+Expanded URL: [https://gptenv.github.io/neon_recursion/](https://gptenv.github.io/neon_recursion/)
+
+Preview URL: [https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html)
 
 Version: `webgl-wasm-v10.5-fullscreen-hud-hotfix-2026-06-10`
 
