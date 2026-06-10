@@ -4,7 +4,7 @@
 > Stop immediately if you feel discomfort, dizziness, eye strain, nausea, or any
 > seizure-related symptoms.
 
-# Neon Recursion WebGL/WASM V10.5 Fullscreen HUD Hotfix
+# Neon Recursion WebGL/WASM V10.5
 
 Launch the Neon Recusion app (click this link): [https://def.s.gy/neon](https://def.s.gy/neon)
 
