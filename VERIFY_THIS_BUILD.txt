@@ -1,16 +1,17 @@
-Neon Recursion WebGL/WASM V10.7
+Neon Recursion WebGL/WASM V10.8
 
 Expected app version marker:
-  webgl-wasm-v10.7-2026-06-10
+  webgl-wasm-v10.8-2026-06-stripefix-reactive
 
 Fixed/added:
-- V10.7 layered reactive shader engine with underlay, warped camera layer, previous-frame displacement, overlay masks, and pseudo-alpha compositing.
-- V10.7 shader tuning restores saturated recursive contrast, brighter colour cycling, stronger feedback displacement, and visible audio/video motion while keeping camera structure readable.
-- Up/Down and vertical swipe-hold now control visible visual drive for warp, colour, depth, feedback, and reaction gain.
+- V10.8 layered reactive shader engine with underlay, warped camera layer, previous-frame displacement, overlay masks, and pseudo-alpha compositing.
+- V10.8 shader tuning keeps saturated recursive contrast, brighter colour cycling, feedback displacement, and visible audio/video motion while keeping camera structure readable.
+- Up/Down and vertical swipe-hold now control the randomizer seed offset (reseed baked/generated recipes live). -/= now control visual drive.
 - Generated presets use a new 24-value schema for much broader audio/video/reactive variance.
 - The 200 baked presets were regenerated and remapped through a mixed family/mode recipe permutation for stronger adjacent-slot variance.
 - Recipes select distinct audio reaction lanes, motion lanes, shape transforms, mask reactions, and feedback personalities for stronger preset-to-preset behavioral variance.
-- -/= decrement/increment a live randomizer seed offset that reseeds the active recipe and future forged presets.
+- Recipes now also select composition, color, mask, and warp personalities so most presets do not rely on wobble-warping.
+- -/= adjust visual drive (warp, colour, depth, feedback, reactions). Seed offset is now on arrows + vertical swipe/hold.
 - New forged presets use browser entropy plus multiple candidate recipes biased toward recipe-lane distance from existing presets.
 - F toggles browser fullscreen via the Fullscreen API.
 - Pressing F always forces the HUD hidden; it never toggles HUD state.
@@ -28,16 +29,20 @@ Fixed/added:
 
 Verification performed in sandbox:
 - node --check app.js
-- make clean
-- make
+- source ~/.profile && make clean && make
 - verified app.js contains toggleFullscreen(), requestFullscreen(), exitFullscreen(), fullscreenchange
 - verified F key path calls toggleFullscreen() and H key path uses setHUDVisible()
 - verified Space and double-tap/click paths call toggleRecordingGesture()
 - verified recording path combines offscreen manual canvas capture with cloned mixed-audio tracks
 - verified recording start path calls settleDisplayForRecording() before startRecording()
-- verified V10.7 fallback mode starts without shader compile errors
-- verified Up/Down changes drive and single click forges a new layered recipe
-- verified vertical drag changes drive without triggering forge
+- verified V10.8 fallback mode starts without shader compile errors
+- verified Up/Down and vertical drag/hold change seed offset (and reseed recipes) and single click forges a new layered recipe
+- verified vertical drag/hold changes seed without triggering forge; -/= adjust drive
 - verified high-contrast V10-style layered shader compiles and forge/drive still work
 - verified bounded flow/feedback tuning avoids the uniform noisy wash and keeps baked preset slots visually more distinct
-- verified -/= update the HUD seed offset, reseed the active recipe, and C forges new entropy-backed presets without console errors
+- verified -/= adjust drive (no longer seed), Up/Down update the HUD seed offset + reseed the active recipe + clear fb, and C forges new entropy-backed presets without console errors
+- V10.8: completely reworked 20 field families + 8 react/motion/shape/feedback lanes + core reactivity signals (body/air/beat/groove/detail + punchier slam/beat drive) for much more varied, musical, and visually interesting audio-reactive looks across all 200 baked presets.
+- V10.8: introduced explicit stripeLane (recipe[17]) + stripeIntent gating; diagonal (x+y) stripes and stripe veils now only appear in presets with a deliberate "stripe personality" (rare, ~15% of baked) and further probabilistically/family-gated so accidental interlaced-looking diagonals are eliminated for the vast majority of presets.
+- V10.8: refreshed baseRecipe permutation + low-biased stripe distribution + updated makeRecipe for forged presets; new VERSION and engine tags.
+- V10.8: refreshed baked preset names and recipe mapping across 200 subject/behavior pairings, with explicit non-warp, color, mask, block, edge, feedback, radial, and warp personalities.
+- node --check app.js still clean; distribution sim confirms striping now rare+intentional.

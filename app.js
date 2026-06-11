@@ -1,7 +1,7 @@
 (() => {
 'use strict';
 
-const VERSION = "webgl-wasm-v10.7-2026-06-10";
+const VERSION = "webgl-wasm-v10.8-2026-06-stripefix-reactive";
 const TAP_MOVE_PX = 18;
 const DOUBLE_TAP_MS = 320;
 const DOUBLE_TAP_PX = 42;
@@ -10,7 +10,7 @@ const SWIPE_RATIO = 1.5;
 const DRIVE_MIN = 0.0;
 const DRIVE_MAX = 6.0;
 const DRIVE_KEY_STEP = 0.28;
-const DRIVE_HOLD_UNITS_PER_SEC = 1.75;
+const SEED_HOLD_UNITS_PER_SEC = 2.5;
 const RECIPE_SIZE = 24;
 const RECIPE_SCHEMA = 2;
 const RECORDING_FPS = 60;
@@ -27,208 +27,22 @@ const MP4_RECORDING_TYPES = [
   'video/mp4;codecs=h264',
   'video/mp4'
 ];
-const BASE_EFFECT_NAMES = [
-  "Prismatic Depth Underlay",
-  "Feedback Cathedral Underlay",
-  "Chromatic Undertow Underlay",
-  "Spectral Glass Underlay",
-  "Bass Gravity Underlay",
-  "Flux Origami Underlay",
-  "Camera Melt Underlay",
-  "Entropy Loom Underlay",
-  "Harmonic Parallax Underlay",
-  "Rhythm Aperture Underlay",
-  "Subsurface Neon Underlay",
-  "Treble Filament Underlay",
-  "Tonality Rift Underlay",
-  "Motion Bloom Underlay",
-  "Pixel Weather Underlay",
-  "Phase Garden Underlay",
-  "Luma Vortex Underlay",
-  "Onset Prism Underlay",
-  "Vector Mirage Underlay",
-  "Signal Alchemy Underlay",
-  "Prismatic Depth Overlay",
-  "Feedback Cathedral Overlay",
-  "Chromatic Undertow Overlay",
-  "Spectral Glass Overlay",
-  "Bass Gravity Overlay",
-  "Flux Origami Overlay",
-  "Camera Melt Overlay",
-  "Entropy Loom Overlay",
-  "Harmonic Parallax Overlay",
-  "Rhythm Aperture Overlay",
-  "Subsurface Neon Overlay",
-  "Treble Filament Overlay",
-  "Tonality Rift Overlay",
-  "Motion Bloom Overlay",
-  "Pixel Weather Overlay",
-  "Phase Garden Overlay",
-  "Luma Vortex Overlay",
-  "Onset Prism Overlay",
-  "Vector Mirage Overlay",
-  "Signal Alchemy Overlay",
-  "Prismatic Depth Warpfield",
-  "Feedback Cathedral Warpfield",
-  "Chromatic Undertow Warpfield",
-  "Spectral Glass Warpfield",
-  "Bass Gravity Warpfield",
-  "Flux Origami Warpfield",
-  "Camera Melt Warpfield",
-  "Entropy Loom Warpfield",
-  "Harmonic Parallax Warpfield",
-  "Rhythm Aperture Warpfield",
-  "Subsurface Neon Warpfield",
-  "Treble Filament Warpfield",
-  "Tonality Rift Warpfield",
-  "Motion Bloom Warpfield",
-  "Pixel Weather Warpfield",
-  "Phase Garden Warpfield",
-  "Luma Vortex Warpfield",
-  "Onset Prism Warpfield",
-  "Vector Mirage Warpfield",
-  "Signal Alchemy Warpfield",
-  "Prismatic Depth Reactor",
-  "Feedback Cathedral Reactor",
-  "Chromatic Undertow Reactor",
-  "Spectral Glass Reactor",
-  "Bass Gravity Reactor",
-  "Flux Origami Reactor",
-  "Camera Melt Reactor",
-  "Entropy Loom Reactor",
-  "Harmonic Parallax Reactor",
-  "Rhythm Aperture Reactor",
-  "Subsurface Neon Reactor",
-  "Treble Filament Reactor",
-  "Tonality Rift Reactor",
-  "Motion Bloom Reactor",
-  "Pixel Weather Reactor",
-  "Phase Garden Reactor",
-  "Luma Vortex Reactor",
-  "Onset Prism Reactor",
-  "Vector Mirage Reactor",
-  "Signal Alchemy Reactor",
-  "Prismatic Depth Displacer",
-  "Feedback Cathedral Displacer",
-  "Chromatic Undertow Displacer",
-  "Spectral Glass Displacer",
-  "Bass Gravity Displacer",
-  "Flux Origami Displacer",
-  "Camera Melt Displacer",
-  "Entropy Loom Displacer",
-  "Harmonic Parallax Displacer",
-  "Rhythm Aperture Displacer",
-  "Subsurface Neon Displacer",
-  "Treble Filament Displacer",
-  "Tonality Rift Displacer",
-  "Motion Bloom Displacer",
-  "Pixel Weather Displacer",
-  "Phase Garden Displacer",
-  "Luma Vortex Displacer",
-  "Onset Prism Displacer",
-  "Vector Mirage Displacer",
-  "Signal Alchemy Displacer",
-  "Prismatic Depth Mask Engine",
-  "Feedback Cathedral Mask Engine",
-  "Chromatic Undertow Mask Engine",
-  "Spectral Glass Mask Engine",
-  "Bass Gravity Mask Engine",
-  "Flux Origami Mask Engine",
-  "Camera Melt Mask Engine",
-  "Entropy Loom Mask Engine",
-  "Harmonic Parallax Mask Engine",
-  "Rhythm Aperture Mask Engine",
-  "Subsurface Neon Mask Engine",
-  "Treble Filament Mask Engine",
-  "Tonality Rift Mask Engine",
-  "Motion Bloom Mask Engine",
-  "Pixel Weather Mask Engine",
-  "Phase Garden Mask Engine",
-  "Luma Vortex Mask Engine",
-  "Onset Prism Mask Engine",
-  "Vector Mirage Mask Engine",
-  "Signal Alchemy Mask Engine",
-  "Prismatic Depth Depth Choir",
-  "Feedback Cathedral Depth Choir",
-  "Chromatic Undertow Depth Choir",
-  "Spectral Glass Depth Choir",
-  "Bass Gravity Depth Choir",
-  "Flux Origami Depth Choir",
-  "Camera Melt Depth Choir",
-  "Entropy Loom Depth Choir",
-  "Harmonic Parallax Depth Choir",
-  "Rhythm Aperture Depth Choir",
-  "Subsurface Neon Depth Choir",
-  "Treble Filament Depth Choir",
-  "Tonality Rift Depth Choir",
-  "Motion Bloom Depth Choir",
-  "Pixel Weather Depth Choir",
-  "Phase Garden Depth Choir",
-  "Luma Vortex Depth Choir",
-  "Onset Prism Depth Choir",
-  "Vector Mirage Depth Choir",
-  "Signal Alchemy Depth Choir",
-  "Prismatic Depth Mirror Well",
-  "Feedback Cathedral Mirror Well",
-  "Chromatic Undertow Mirror Well",
-  "Spectral Glass Mirror Well",
-  "Bass Gravity Mirror Well",
-  "Flux Origami Mirror Well",
-  "Camera Melt Mirror Well",
-  "Entropy Loom Mirror Well",
-  "Harmonic Parallax Mirror Well",
-  "Rhythm Aperture Mirror Well",
-  "Subsurface Neon Mirror Well",
-  "Treble Filament Mirror Well",
-  "Tonality Rift Mirror Well",
-  "Motion Bloom Mirror Well",
-  "Pixel Weather Mirror Well",
-  "Phase Garden Mirror Well",
-  "Luma Vortex Mirror Well",
-  "Onset Prism Mirror Well",
-  "Vector Mirage Mirror Well",
-  "Signal Alchemy Mirror Well",
-  "Prismatic Depth Plasma Lens",
-  "Feedback Cathedral Plasma Lens",
-  "Chromatic Undertow Plasma Lens",
-  "Spectral Glass Plasma Lens",
-  "Bass Gravity Plasma Lens",
-  "Flux Origami Plasma Lens",
-  "Camera Melt Plasma Lens",
-  "Entropy Loom Plasma Lens",
-  "Harmonic Parallax Plasma Lens",
-  "Rhythm Aperture Plasma Lens",
-  "Subsurface Neon Plasma Lens",
-  "Treble Filament Plasma Lens",
-  "Tonality Rift Plasma Lens",
-  "Motion Bloom Plasma Lens",
-  "Pixel Weather Plasma Lens",
-  "Phase Garden Plasma Lens",
-  "Luma Vortex Plasma Lens",
-  "Onset Prism Plasma Lens",
-  "Vector Mirage Plasma Lens",
-  "Signal Alchemy Plasma Lens",
-  "Prismatic Depth Feedback Bloom",
-  "Feedback Cathedral Feedback Bloom",
-  "Chromatic Undertow Feedback Bloom",
-  "Spectral Glass Feedback Bloom",
-  "Bass Gravity Feedback Bloom",
-  "Flux Origami Feedback Bloom",
-  "Camera Melt Feedback Bloom",
-  "Entropy Loom Feedback Bloom",
-  "Harmonic Parallax Feedback Bloom",
-  "Rhythm Aperture Feedback Bloom",
-  "Subsurface Neon Feedback Bloom",
-  "Treble Filament Feedback Bloom",
-  "Tonality Rift Feedback Bloom",
-  "Motion Bloom Feedback Bloom",
-  "Pixel Weather Feedback Bloom",
-  "Phase Garden Feedback Bloom",
-  "Luma Vortex Feedback Bloom",
-  "Onset Prism Feedback Bloom",
-  "Vector Mirage Feedback Bloom",
-  "Signal Alchemy Feedback Bloom"
+const BASE_NAME_SUBJECTS = [
+  'Luma Circuit','Beat Fresnel','Spectral Ink','Bass Mosaic','Phase Aperture',
+  'Signal Glass','Flux Needle','Tonal Bloom','Edge Cathedral','Rhythm Scanner',
+  'Chromatic Loom','Vector Mask','Entropy Prism','Subsurface Echo','Onset Lattice',
+  'Granular Rift','Treble Ribbon','Motion Halo','Feedback Topology','Solarized Well'
 ];
+const BASE_NAME_BEHAVIORS = [
+  'Camera Recolor','Edge Mask','Poster Pulse','Contour Bloom','Beat Cutout',
+  'Feedback Echo','Block Reactor','Radial Lens','Channel Mutation','Warp Surge'
+];
+const BASE_EFFECT_NAMES = Array.from({ length: 200 }, (_, i) => {
+  const pair = Math.imul(i, 37) % 200;
+  const subject = BASE_NAME_SUBJECTS[pair % BASE_NAME_SUBJECTS.length];
+  const behavior = BASE_NAME_BEHAVIORS[Math.floor(pair / BASE_NAME_SUBJECTS.length)];
+  return `${subject} ${behavior}`;
+});
 const BASE_COUNT = BASE_EFFECT_NAMES.length;
 const BANK_SIZE = 10;
 const STORE_KEY = 'neon_recursion_touchstone_v107_presets';
@@ -306,6 +120,7 @@ float grid(vec2 uv,float scale){vec2 g=abs(fract(uv*scale)-.5);return 1.0-sat(mi
 float stripes(float x,float f,float w){return smoothstep(1.0-w,1.0, .5+.5*sin(x*f*6.2831853));}
 float cells(vec2 uv,float scale){vec2 gv=fract(uv*scale)-.5;vec2 id=floor(uv*scale);float m=10.0;for(int y=-1;y<=1;y++)for(int x=-1;x<=1;x++){vec2 o=vec2(float(x),float(y));vec2 r=o+vec2(hash21(id+o),hash21(id+o+9.2))-.5-gv;m=min(m,dot(r,r));}return sat(1.0-sqrt(m)*1.8);}
 vec3 poster(vec3 c,float levels){return floor(c*levels)/max(1.0,levels-1.0);}
+vec3 hueShift(vec3 c,float a){vec3 k=vec3(.57735027);float ca=cos(a),sa=sin(a);return c*ca+cross(k,c)*sa+k*dot(k,c)*(1.0-ca);}
 mat2 rot(float a){float s=sin(a),c=cos(a);return mat2(c,-s,s,c);}
 vec3 prevAt(vec2 uv){return texture(uPrev,sat2(uv)).rgb;}
 vec2 gradPrev(vec2 uv){vec2 px=1.5/uRes;float c=luma(prevAt(uv));return vec2(luma(prevAt(uv+vec2(px.x,0.0)))-c,luma(prevAt(uv+vec2(0.0,px.y)))-c);}
@@ -325,6 +140,53 @@ vec3 chromaCam(vec2 uv, vec2 dir, float amount){vec2 d=dir*amount;return vec3(ca
 float ringField(vec2 p,float scale,float phase){return .5+.5*sin((length(p)*scale+phase)*6.2831853);}
 float blockHash(vec2 uv,vec2 scale,float t){return hash21(floor(uv*scale)+vec2(floor(t)));}
 
+// Audio-driven color channel mutation, inspired by classic conditional
+// band-threshold channel remapping + mod chaos (not just amplitude/brightness).
+// mutateAmt (0..1 from recipe/WASM) controls how strong/sensitive the mutations are
+// for this preset. Low mutate = subtle, high mutate = full crazy filter mode.
+// This (plus WASM recipe_mutate) makes the set of 200+ effects way more awesome.
+vec3 audioMutate(vec3 c, float lo, float md, float hi, float bt, float gr, float mutateAmt) {
+  float r = c.r;
+  float g = c.g;
+  float b = c.b;
+  float n = 0.68 + (1.0 - mutateAmt) * 0.12;  // much higher threshold to reduce sensitivity
+  float str = 0.25 + mutateAmt * 0.5;  // much gentler overall strength
+
+  // Low/body + beat group: conditional channel surgery (much softer, less jumpy)
+  if (lo > n || bt > n) {
+    if (g < n) r = (r + b) / max(0.25, lo + 0.25);
+    if (r < n) b = b / max(0.25, r) + hi * (0.2 * str);
+    if (b < n) g = g + (md / max(0.25, lo + 0.3));
+  }
+
+  // Mid + high group: cross-multiplies and mods (very gentle)
+  if (md > n || hi > n) {
+    r = mod(r * g * (1.0 + 0.04*str), 1.002);
+    g = mod(g * b * (1.0 + 0.02*str), 1.002);
+    b = mod(b * r * (0.98 - 0.02*str), 1.002);
+  }
+
+  // Beat/groove transient group: conditional mods (reduced)
+  if (bt > n || gr > n) {
+    if (g > n) r = mod(r * b, max(0.25, gr));
+    if (b > n) g = mod(g - r * (0.25 * str), max(0.25, md));
+    if (r > n) b = mod(b * ((g + r) * 0.5), max(0.25, hi + 0.1));
+  }
+
+  // Extra division style (less extreme)
+  if (lo > n) {
+    r = mod(r, 1.001) / max(0.15, mod(b * lo, 0.88) + 0.1);
+  }
+  if (hi > n) {
+    g = mod(g, 1.001) / max(0.15, mod(r * hi, 0.85) + 0.1);
+  }
+  if (bt > n) {
+    b = mod(b, 1.001) / max(0.15, mod(g * bt, 0.8) + 0.1);
+  }
+
+  return vec3(clamp(r, 0.0, 1.0), clamp(g, 0.0, 1.0), clamp(b, 0.0, 1.0));
+}
+
 void main(){
   vec2 uv=vUV;
   vec2 asp=vec2(uRes.x/uRes.y,1.0);
@@ -342,36 +204,79 @@ void main(){
   float bright=sat(specCentroid*.8+air*.45+uRecipe2.y*.25);
   float pulse=sat(onset*.95+rhythm*.68+flux*.62);
   float tone=sat(tonal*.76+domPeak*.48+uRecipe3.z*.18);
-  float lowReact=sat(sub*.52+bass*.88+lowMid*.28);
-  float highReact=sat(highMid*.38+treble*.86+air*.58);
-  float reaction=sat((lowReact*(.44+uRecipe2.x*.76)+mid*(.26+uRecipe2.y*.62)+highReact*(.24+uRecipe2.z*.72)+flux*(.34+uRecipe2.w*.58)+energy*.36)*(.48+drive*.22));
+  float stripeLane=floor(sat(uRecipe4.y)*7.0);
+  float composeLane=floor(sat(uRecipe1.w)*8.0);
+  float colorLane=floor(sat(uRecipe3.x)*8.0);
+  float maskLane=floor(sat(uRecipe4.x)*8.0);
+  float warpLane=floor(sat(uRecipe5.z)*8.0);
+  float mutateAmt = 0.35 + uRecipe4.w * 0.9;  // from WASM recipe_mutate bias - controls how wild audio channel mutations are for this preset
+
+  // Richer, punchier audio-reactive signals for more interesting reactivity
+  float body   = sat(sub*.58 + bass*1.08 + lowMid*.52);
+  float midb   = sat(lowMid*.38 + mid*1.02 + highMid*.52);
+  float airDrive = sat(highMid*.32 + treble*.94 + air*.82);  // derived high-freq drive (do not shadow raw 'air' uniform)
+  float beat   = sat(onset*1.42 + flux*.78 + rhythm*.62 + pulse*.35);
+  float groove = sat(rhythm*.98 + energy*.58 + domPeak*.38 + beat*.22);
+  float detail = sat(zcr*.72 + aEntropy*.55 + airDrive*.42);
+  float lowReact  = body;
+  float highReact = airDrive;
+  float reaction=sat((body*(.48+uRecipe2.x*.72)+midb*(.30+uRecipe2.y*.58)+airDrive*(.26+uRecipe2.z*.68)+flux*(.36+uRecipe2.w*.55)+groove*.38+energy*.28)*(.52+drive*.18));
   float reactLane=floor(sat(uRecipe2.x)*8.0);
   float motionLane=floor(sat(uRecipe3.y)*8.0);
   float feedbackLane=floor(sat(uRecipe4.z)*8.0);
   float shapeLane=floor(sat(uRecipe5.y)*8.0);
-  float audioA=lowReact;
-  if(reactLane < .5) audioA=lowReact;
-  else if(reactLane < 1.5) audioA=mid;
-  else if(reactLane < 2.5) audioA=highReact;
+  float audioA=body;
+  if(reactLane < .5) audioA=body;
+  else if(reactLane < 1.5) audioA=midb;
+  else if(reactLane < 2.5) audioA=airDrive;
   else if(reactLane < 3.5) audioA=flux;
-  else if(reactLane < 4.5) audioA=onset;
-  else if(reactLane < 5.5) audioA=rhythm;
-  else if(reactLane < 6.5) audioA=tone;
+  else if(reactLane < 4.5) audioA=beat;
+  else if(reactLane < 5.5) audioA=groove;
+  else if(reactLane < 6.5) audioA=detail;
   else audioA=ent;
-  float audioB=highReact;
-  if(reactLane < .5) audioB=flux;
-  else if(reactLane < 1.5) audioB=lowReact;
-  else if(reactLane < 2.5) audioB=rhythm;
-  else if(reactLane < 3.5) audioB=treble;
-  else if(reactLane < 4.5) audioB=domPeak;
-  else if(reactLane < 5.5) audioB=energy;
-  else if(reactLane < 6.5) audioB=zcr;
-  else audioB=aEntropy;
-  float wild=sat(audioA*(.48+uRecipe3.x*.86)+audioB*(.32+uRecipe4.y*.7)+pulse*(.24+.72*uRecipe5.w)+reaction*.36);
-  float slam=pow(sat(onset*.64+audioA*(.28+.76*uRecipe4.w)+flux*.3),.55+uRecipe5.x*.75);
-  float snap=step(.58+.28*uRecipe4.x,fract(uTime*(1.35+mode*.41+uRecipe1.z*5.2)+audioA*1.7+seed));
-  float t=uTime*(.06+uRecipe1.z*.34+rhythm*.18+drive*.028);
-  t += slam*(.16+uRecipe1.w*.5)+snap*audioB*(.08+.22*uRecipe5.z);
+  float audioB=airDrive;
+  if(reactLane < .5) audioB=flux+beat*.35;
+  else if(reactLane < 1.5) audioB=body;
+  else if(reactLane < 2.5) audioB=groove;
+  else if(reactLane < 3.5) audioB=treble*.82+detail*.6;
+  else if(reactLane < 4.5) audioB=midb;
+  else if(reactLane < 5.5) audioB=energy+flux*.3;
+  else if(reactLane < 6.5) audioB=zcr*1.15+onset*.25;
+  else audioB=beat+flux*.45;
+  float wild=sat(audioA*(.52+uRecipe3.x*.82)+audioB*(.30+uRecipe3.z*.66)+beat*(.30+.68*uRecipe5.w)+reaction*.42+groove*.24);
+  float slam=pow(sat(beat*(.68+uRecipe4.w*.58)+audioA*(.24+.72*uRecipe5.x)+flux*.32+onset*.42),.48+uRecipe5.x*.62);
+  float snap=step(.54+.30*uRecipe4.x,fract(uTime*(1.42+mode*.36+uRecipe1.z*4.9)+audioA*1.85+beat*2.1+seed));
+  float t=uTime*(.055+uRecipe1.z*.33+rhythm*.20+groove*.09+drive*.026);
+  t += slam*(.17+uRecipe1.w*.48)+snap*audioB*(.09+.24*uRecipe5.z)+beat*.065;
+
+  // Global audio presence that considers not just volume (body/airDrive) but also
+  // rhythm/tempo/cadence (beat, groove, rhythm, onset), pitch/energy (detail, flux, specCentroid via air),
+  // and overall activity. This is the modern equivalent of the old shader's per-band > n checks.
+  // When low, we force plain unaltered camera feed (no warp, no effects, no feedback).
+  // Compute base presence (volume + rhythm + pitch features) for reference.
+  float audioPresence = sat(
+    (body + midb + airDrive) * 0.35 +
+    (beat + groove) * 0.65 +
+    (onset + rhythm) * 0.45 +
+    detail * 0.35 +
+    flux * 0.40 +
+    energy * 0.25
+  );
+
+  // Unique per-effect triggers from recipe (breaking change ok, no backwards compat needed).
+  // Each level has its own ramp (smoothstep base controlled by recipe values [6,10,14,20]).
+  // volLevel: low frequencies / overall energy (body/midb)
+  // rhythmLevel: tempo, cadence, rhythm, onset, groove, beat
+  // pitchLevel: high frequencies, tone, spectral detail, flux (pitch/timbre)
+  // Different presets will have e.g. underlay appear on bass, color twists on treble, motion on rhythm.
+  // At low audio (all levels near 0), effectLevel=0 -> only plain camera feed.
+  float volLevel = smoothstep(uRecipe1.z, uRecipe1.z + 0.18, (body + midb + energy) * 0.85);
+  float rhythmLevel = smoothstep(0.12, 0.12 + uRecipe2.z * 0.40, beat + groove + onset + rhythm * 0.6);
+  float pitchLevel = smoothstep(0.14, 0.14 + uRecipe3.z * 0.35, airDrive + detail + flux * 0.7);
+
+  // overall for layers/warp/feedback/final cutoff: max of the unique triggers.
+  // This provides gradient ramp-up based on pitch/tone/rhythm/volume, not just amplitude.
+  float effectLevel = max(volLevel, max(rhythmLevel, pitchLevel));
 
   vec2 prevGrad=gradPrev(uv);
   vec2 camGrad0=gradCam(uv);
@@ -383,204 +288,405 @@ void main(){
   vec2 swirl=rot(seed*6.2831853+uTime*(.12+uRecipe4.x*.34))*vec2(-p.y,p.x);
   vec2 noiseFlow=vec2(noise(uv*(4.0+uRecipe1.w*15.0)+t),noise(uv*(5.0+uRecipe2.x*17.0)-t+4.7))-.5;
   vec2 laneVec=vec2(0.0);
-  if(motionLane < .5) laneVec=normalize(p+vec2(.001,-.002))*audioA;
-  else if(motionLane < 1.5) laneVec=vec2(-p.y,p.x)*audioB;
-  else if(motionLane < 2.5) laneVec=vec2(sin((uv.y+t)*24.0),cos((uv.x-t)*21.0))*audioA;
-  else if(motionLane < 3.5) laneVec=vec2(sign(noiseFlow.x),sign(noiseFlow.y))*slam;
-  else if(motionLane < 4.5) laneVec=prevGrad*(2.0+audioA*3.5);
-  else if(motionLane < 5.5) laneVec=camGrad0*(2.0+audioB*3.5);
-  else if(motionLane < 6.5) laneVec=vec2(stripes(uv.y+t,18.0+audioA*60.0,.12)-.5,stripes(uv.x-t,14.0+audioB*50.0,.12)-.5);
-  else laneVec=vec2(noise(vec2(uv.x+t,uv.y)*9.0),noise(vec2(uv.y-t,uv.x)*9.0))-.5;
-  vec2 flow=prevGrad*(.42+uRecipe3.x*1.75)+camGrad0*(.44+uRecipe3.y*1.8)+swirl*(.1+uRecipe4.y*.7)+noiseFlow*(.18+ent*.62)+laneVec*(.08+wild*.62+slam*.35);
+  if(motionLane < .5) laneVec=normalize(p+vec2(.001,-.002))*(body*1.1+beat*.4);
+  else if(motionLane < 1.5) laneVec=vec2(-p.y,p.x)*(audioB*1.15+groove*.35);
+  else if(motionLane < 2.5) laneVec=vec2(sin((uv.y+t)*(22.0+audioA*18.0)),cos((uv.x-t)*(19.0+audioB*14.0)))*(.6+wild*.5);
+  else if(motionLane < 3.5) laneVec=vec2(sign(noiseFlow.x),sign(noiseFlow.y))*slam*(1.1+beat*.6);
+  else if(motionLane < 4.5) laneVec=prevGrad*(1.8+audioA*4.2+slam*1.6);
+  else if(motionLane < 5.5) laneVec=camGrad0*(1.9+audioB*4.0+beat*1.4);
+  else if(motionLane < 6.5) {
+    // scan/stripe motion: only strong when stripe personality is selected (rare)
+    float sf = (stripeLane > 4.3) ? 1.0 : .22;
+    laneVec=vec2(stripes(uv.y+t,16.0+audioA*52.0,.10)-.5,stripes(uv.x-t,13.0+audioB*44.0,.10)-.5) * sf;
+  }
+  else laneVec=vec2(noise(vec2(uv.x+t,uv.y)*8.5+beat),noise(vec2(uv.y-t,uv.x)*8.5-beat))-.5;
+  vec2 flow=prevGrad*(.40+uRecipe3.x*1.82)+camGrad0*(.42+uRecipe3.y*1.85)+swirl*(.09+uRecipe3.z*.72)+noiseFlow*(.17+ent*.58)+laneVec*(.07+wild*.65+slam*.38);
   flow=flow/(1.0+length(flow)*3.6)+vec2(.0003,-.0002);
   float depth=fbm((uv+flow*.03)*(1.4+uRecipe4.z*8.0)+vec2(seed*9.0,t*.7));
   depth=sat(depth*.54+prevEdge*.18+camEdge*.22+reaction*.3+wild*.24+slam*.14);
-  float warpAmt=(.003+uRecipe1.w*.024+reaction*.038+pulse*.02+wild*.028+slam*.018+drive01*.04)*(0.6+uRecipe4.w*.9);
+  float warpPersonality=0.0;
+  if(warpLane < .5) warpPersonality=0.0;           // pure camera/color/mask presets: no camera wobble
+  else if(warpLane < 1.5) warpPersonality=.045;    // edge-reactive, visually active but almost no UV motion
+  else if(warpLane < 2.5) warpPersonality=.12;     // block/poster lanes: tiny displacement only
+  else if(warpLane < 3.5) warpPersonality=.28;     // feedback echo lanes
+  else if(warpLane < 4.5) warpPersonality=.46;     // mild parallax
+  else if(warpLane < 5.5) warpPersonality=.72;     // radial/lens motion
+  else if(warpLane < 6.5) warpPersonality=.95;     // strong motion
+  else warpPersonality=1.22;                       // deliberate warp surge
+  warpPersonality*=effectLevel;
+  float warpAmt=(.003+reaction*.038+pulse*.02+wild*.028+slam*.018+drive01*.035)*(0.55+uRecipe4.w*.85) * (volLevel * 0.62 + rhythmLevel * 0.28 + pitchLevel * .10) * warpPersonality;
   vec2 radial=normalize(p+flow*.08+vec2(.0007,-.0004));
   vec2 parallax=(flow*(depth-.5)*1.25+radial*depth*(.22+.34*uRecipe5.x))*warpAmt;
   vec2 camUv=sat2(uv + parallax + noiseFlow*warpAmt*(.85+.5*uRecipe4.x));
   camUv=sat2(.5+(camUv-.5)*(1.0+(uRecipe5.x-.5)*.34*drive01));
-  vec2 prevUv=sat2(uv - parallax*(.8+uRecipe5.y) + prevGrad*(.055+drive01*.12));
+  vec2 prevUv=sat2(uv - parallax*(.8+uRecipe5.y) + prevGrad*(.018+drive01*.065+warpPersonality*.07));
   vec3 prev=prevAt(prevUv);
   vec3 cam=chromaCam(camUv,flow,.0018+uRecipe1.w*.011+highReact*.012*drive01);
   float camLum=luma(cam);
   float localNoise=fbm((uv+parallax)*(2.0+mode*.55+uRecipe2.w*7.0)+vec2(t,seed*13.0));
 
   vec2 q=p+parallax*asp*2.0;
-  float qAngle=(uRecipe3.w-.5)*3.14159+reaction*.6+wild*(uRecipe4.x-.5)*1.8;
-  if(shapeLane < .5){
-    q=rot(qAngle)*q*(1.0+wild*.42);
+  float shapeDrive=sat(warpPersonality*1.25);
+  float qAngle=((uRecipe3.w-.5)*3.14159+reaction*.6+wild*(uRecipe4.x-.5)*1.8)*(.18+.82*shapeDrive);
+  if(warpLane < .5){
+    q=p;
+  } else if(warpLane < 1.5){
+    q=p + (camGrad0*(.018+.09*audioA)+prevGrad*(.012+.055*beat))*effectLevel;
+  } else if(warpLane < 2.5){
+    float blockScale=3.8+mode*.72+floor(audioA*5.0+beat*3.0);
+    q=floor((p+.5)*blockScale)/blockScale-.5;
+    q+=camGrad0*(.018+.07*pitchLevel)*effectLevel;
+  } else if(shapeLane < .5){
+    q=rot(qAngle)*q*(1.0+wild*.42*shapeDrive);
   } else if(shapeLane < 1.5){
-    q=rot(qAngle+length(q)*(2.0+audioA*5.0))*q;
+    q=rot(qAngle+length(q)*(2.0+audioA*5.2*shapeDrive))*q;
   } else if(shapeLane < 2.5){
-    q+=vec2(sin(q.y*(7.0+mode)+t*4.0),cos(q.x*(6.0+mode)-t*3.0))*(.025+wild*.11);
+    q+=vec2(sin(q.y*(7.5+mode)+t*4.2),cos(q.x*(6.5+mode)-t*3.2))*(.012+wild*.11*shapeDrive);
     q=rot(qAngle)*q;
   } else if(shapeLane < 3.5){
-    q=rot(qAngle)*vec2(q.x*(1.0+audioA*.65),q.y*(1.0-audioB*.38));
+    q=rot(qAngle)*vec2(q.x*(1.0+audioA*.72*shapeDrive),q.y*(1.0-audioB*.42*shapeDrive));
   } else if(shapeLane < 4.5){
-    q=abs(fract((q+0.5)*(1.4+uRecipe5.x*3.0))-.5)*2.0-.5;
+    q=abs(fract((q+0.5)*(1.5+uRecipe5.x*3.2))-.5)*2.0-.5;
     q=rot(qAngle)*q;
   } else if(shapeLane < 5.5){
     float r=length(q)+.001;
-    q=vec2(atan(q.y,q.x)/3.14159,r-.34)*(.9+wild*.8);
+    q=vec2(atan(q.y,q.x)/3.14159,r-.36)*(.92+wild*.82*shapeDrive);
   } else if(shapeLane < 6.5){
     q=rot(qAngle)*q;
-    q+=prevGrad*(.3+audioA*2.4)+camGrad0*(.2+audioB*2.0);
+    q+=(prevGrad*(.22+audioA*2.2)+camGrad0*(.16+audioB*1.8)+vec2(beat*.06))*shapeDrive;
   } else {
-    q=rot(qAngle+snap*audioA*2.4)*floor(q*(5.0+mode+wild*8.0))/(5.0+mode+wild*8.0);
+    float snapGrid=5.2+mode+wild*8.5*shapeDrive;
+    q=rot(qAngle+snap*audioA*2.6*shapeDrive)*floor(q*snapGrid)/snapGrid;
   }
+
+  // === FAMILIES: 20 distinct structure generators ===
+  // Stripe/diagonal usage is now gated by stripeLane (intentional only, rare by default in baked 200)
   float field=0.0;
+  float stripeIntent = (stripeLane > 4.2) ? (0.72 + 0.28 * fract(stripeLane * 1.9)) : (stripeLane > 2.8 ? 0.22 : 0.07);
   if(family < .5){
-    field=ringField(q,4.0+mode*1.7+lowReact*8.0,t+seed)+grid(q+flow*.04,5.0+mode*2.0)*.35;
+    // Concentric audio ripples + radial spokes — now with more old-school mod/conditional twist
+    float r=length(q)+.0007;
+    float rings=sin((r*(7.0+mode*2.8+body*11.0)+t*1.6)*6.2831853);
+    float spokes=abs(sin(atan(q.y,q.x)* (5.0+mode) + t*1.2));
+    field = mod( .5 + .5*rings*.7 + spokes*.45 + camEdge*.3 + beat*.25 , 1.05);
+    if (body > 0.55) field = mod(field * (1.0 + airDrive*0.6), 1.0);
   } else if(family < 1.5){
-    field=max(grid(q+vec2(sin(q.y*6.0+t),cos(q.x*5.0-t))*.05,7.0+mode*2.6+mid*16.0),ringField(q,10.0+tone*9.0,seed));
+    // Rotating angular sectors + interference
+    float ang=atan(q.y,q.x)+t*(.6+groove*.4);
+    float sec=abs(fract(ang* (3.5+mode*1.2) / 6.2831853 )-.5);
+    field=sat( (1.0-smoothstep(.12,.48,sec))*.85 + fbm(q*1.6+t*.7)*.35 + air*.28 + prevEdge*.22 );
+    field = mod(field + midb * 0.4, 1.02);
   } else if(family < 2.5){
-    field=stripes(q.y+fbm(q*2.0+t)*.35,8.0+mode*3.0+flux*26.0,.14+reaction*.24);
+    // Wave lattice / ripple grid (light diagonal only on high stripe intent)
+    float w1=sin((q.x*9.0 + q.y*5.5 + t*2.4 + fbm(q*1.8+t)*.6)*6.283);
+    float w2=sin((q.y*8.5 - q.x*4.8 - t*1.9)*6.283);
+    float lat=sat(.5+.5*(w1*w2*1.3 + w1*.4));
+    float diagStrip = (stripeLane > 4.2) ? stripes(q.x+q.y, 11.0+flux*22.0, .09) : 0.0;
+    field=sat( lat*.72 + diagStrip*stripeIntent*1.1 + camEdge*.32 + beat*.08 );
+    field = mod( field * (1.0 + groove*0.3) , 1.03);
   } else if(family < 3.5){
-    field=sat(camEdge*.75+prevEdge*.55+stripes(q.x+q.y,18.0+highReact*30.0,.08));
+    // Radial bloom + orbiting dots (diagonal moire only with stripe personality)
+    float r=length(q)+.001;
+    float rad=sin((r*(6.0+mode*2.2+body*9.0)-t*1.4)*6.283);
+    float dots=cells(q* (1.6+mode*.6) + vec2(cos(t*.7),sin(t*.9))*1.2 , 4.5+air*3.0);
+    float diag = (stripeLane > 4.5) ? stripes(q.x+q.y + r*1.5, 14.0+highReact*18.0, .07) : 0.0;
+    field=sat( .42 + .58*rad + dots*.55 + diag*stripeIntent + prevEdge*.28 + pulse*.12 );
   } else if(family < 4.5){
-    field=sat(1.0-length(q)*(1.05+uRecipe4.z)+ringField(q,14.0+bass*18.0,t)*.55+lowReact*.35);
+    // Inverted depth tunnel + soft rings
+    float r=length(q)+.0008;
+    float tun=1.0-smoothstep(.15,1.05,r*(1.0+uRecipe4.z*.6));
+    float rf=ringField(q,12.0+bass*22.0+tone*7.0,t*1.1+seed);
+    field=sat( tun*.6 + rf*.55 + lowReact*.28 + camEdge*.25 );
   } else if(family < 5.5){
-    vec2 tri=abs(fract((q+flow*.08)*(4.0+mode))-0.5);
-    field=sat((tri.x+tri.y)*1.2+prevEdge*.5+pulse*.45);
+    // Triangle / tri-grid warp field
+    vec2 tri=abs(fract((q+flow*.06)*(4.2+mode*1.1+beat*1.8))-0.5);
+    float tr=(tri.x+tri.y)*1.35 + sin((tri.x-tri.y)*18.0+t)*.18;
+    field=sat( tr + prevEdge*.42 + groove*.32 );
   } else if(family < 6.5){
-    field=smoothstep(.15,.9,localNoise+camLum*.35+flux*.25)-smoothstep(.82,1.0,prevLum);
+    // Noise + edge difference field (good for masks too)
+    field=smoothstep(.12,.88,localNoise+camLum*.32+flux*.22+beat*.15)-smoothstep(.78,1.0,prevLum*.9);
   } else if(family < 7.5){
-    field=step(.46+uRecipe5.z*.28,noise(q*(12.0+mode*3.0)+t*3.0))*(.35+.65*ent)+prevEdge*.45;
+    // Sparse binary noise blocks that flip on rhythm
+    float thr=.44 + uRecipe5.z*.3 + groove*.08;
+    field=step(thr,noise(q*(11.0+mode*3.2)+t*2.8+beat*1.5))*(.38+.62*ent)+prevEdge*.38;
   } else if(family < 8.5){
-    field=max(cells(uv+flow*.1,3.0+mode+energy*9.0),ringField(q,6.0+mode*1.5,t+depth));
+    // Voronoi cells + orbiting rings
+    float cel=cells(q+flow*.07+vec2(sin(t*.6),cos(t*.8))*.04, 3.2+mode*1.1+energy*6.5);
+    float rf=ringField(q,5.8+mode*1.4,t+depth*.6);
+    field=max(cel*.72, rf*.58) + camEdge*.22;
   } else if(family < 9.5){
-    float checker=step(.5,fract(floor((uv.x+reaction*.06)*(8.0+mode*2.0))+floor((uv.y+rhythm*.05)*(6.0+mode*1.5))));
-    field=mix(checker,1.0-checker,step(.5,noise(vec2(mode,seed))))*(.35+.65*pulse);
+    // Audio-reactive checker / dither with drift — now more chaotic like old filter
+    float cx=floor((uv.x+reaction*.05+flow.x*.03)*(7.5+mode*1.8+groove*4.0));
+    float cy=floor((uv.y+rhythm*.04+flow.y*.02)*(6.2+mode*1.6));
+    float checker=step(.5,fract(cx+cy*1.7+sin(t*.9)*.3));
+    field = mix(checker,1.0-checker, .4+.6*noise(vec2(mode*.3+seed, t*.05)) ) * (.42+.58*pulse+beat*.2);
+    field = mod( field + airDrive * 0.35 , 1.04);
   } else if(family < 10.5){
-    field=smoothstep(.25,.95,fbm(q*(2.5+mode*.4)-flow*.2+t)+camEdge*.4+lowReact*.25);
+    // Organic fbm terrain + camera edges — audio-modded for more character
+    float fb=fbm(q*(2.7+mode*.45)-flow*.18+t*1.05 + beat*.2);
+    field=smoothstep(.22,.92,fb + camEdge*.42 + body*.22);
+    field = mod(field * (1.0 + detail*0.4), 1.03);
   } else if(family < 11.5){
-    field=max(stripes(q.x+sin(q.y*9.0+t)*.08,22.0+treble*58.0,.055+air*.12),prevEdge*.65);
+    // High-freq treble filament (diagonal component only on stripe intent)
+    float fil=stripes(q.x + sin(q.y*7.5 + t*1.6)*.09, 19.0 + air*48.0, .05 + detail*.09);
+    float fil2=stripes(q.y - cos(q.x*6.8 - t*1.3)*.07, 17.0 + treble*42.0, .045);
+    float base=sat( max(fil,fil2)*.82 + prevEdge*.55 );
+    field = (stripeLane > 4.2) ? mix(base*0.55, base, stripeIntent*0.95) : base*0.62 + camEdge*.32;
   } else if(family < 12.5){
-    float rift=abs(q.y+.2*sin(q.x*(5.0+mode)+tone*5.0+t)-.12*cos(q.x*3.0+seed*6.0));
-    field=smoothstep(.23,.0,rift)+camEdge*.35+tone*.2;
+    // Rift / crack + tonal highlights
+    float rift=abs(q.y + .18*sin(q.x*(4.8+mode)+tone*4.6+t) - .1*cos(q.x*2.8+seed*5.5));
+    field=smoothstep(.26,.02,rift)*1.05 + camEdge*.32 + tone*.25 + beat*.12;
   } else if(family < 13.5){
-    field=sat(prevEdge*(1.3+drive01*2.0)+smoothstep(.55,.95,depth+onset*.35));
+    // Edge driven structural depth
+    field=sat( prevEdge*(1.25 + drive01*2.1) + smoothstep(.52,.92,depth + beat*.32) );
   } else if(family < 14.5){
-    field=blockHash(uv+flow*.05,vec2(7.0+mode*2.0,5.0+mode),uTime*(.4+rhythm*6.0))*(.3+.7*energy)+camEdge*.35;
+    // Blocky hash dither + rhythmic reveal
+    float bh=blockHash(uv+flow*.04, vec2(6.8+mode*1.9,4.8+mode), uTime*(.36 + rhythm*5.8 + beat*1.8) );
+    field=sat( bh*(.35+.65*energy) + camEdge*.32 + groove*.2 );
   } else if(family < 15.5){
-    field=max(cells(q+vec2(sin(t),cos(t))*.08,5.0+mode*.8),stripes(q.x+q.y,10.0+zcr*30.0,.18));
+    // Cells + occasional diagonal (rare purposeful stripes)
+    float cel=cells(q + vec2(sin(t*1.1),cos(t*.9))*.07, 4.8+mode*.7 + detail*2.5);
+    float ds = (stripeLane > 4.6) ? stripes(q.x+q.y, 9.0 + zcr*22.0, .14) : 0.0;
+    field=max(cel, ds*stripeIntent*1.15) + prevEdge*.18;
   } else if(family < 16.5){
-    field=ringField(q+flow*.18,9.0+mode*2.0+zcr*16.0,t+prevLum)+camEdge*.55;
+    // Expanding rings + zcr shimmer
+    field=ringField(q+flow*.15, 8.2+mode*1.9 + zcr*12.0, t+prevLum*.6) + camEdge*.48 + air*.15;
   } else if(family < 17.5){
-    field=sat(stripes(q.x,12.0+highReact*40.0,.11)+stripes(q.y,12.0+lowReact*35.0,.11)+onset*.45);
+    // Ortho stripes (x and y) - diagonal avoided; strong only with stripeLane
+    float sx=stripes(q.x,10.5+highReact*32.0,.09);
+    float sy=stripes(q.y,11.0+body*28.0,.085);
+    float ortho=sat(sx*.6 + sy*.55);
+    float orthoGate = (stripeLane > 2.5) ? 0.85 : 0.32;
+    float diag = (stripeLane > 4.7) ? stripes(q.x+q.y,13.0+flux*18.0,.06)*0.55 : 0.0;
+    field=sat( ortho*orthoGate + diag*stripeIntent + beat*.35 );
   } else if(family < 18.5){
-    field=sat(fbm(q*(4.0+mode*.9)+prevGrad*3.0+t)*.65+abs(dot(flow,normalize(q+vec2(0.001))))*.55+flux*.2);
+    // Flow-aligned fbm ridges + directional emphasis
+    float fb=fbm(q*(3.8+mode*.85)+prevGrad*2.6 + t*1.1);
+    float dir=abs(dot(normalize(flow+vec2(.0008)), normalize(q+vec2(.001))))*.7;
+    field=sat( fb*.62 + dir*.52 + flux*.22 + camEdge*.18 );
   } else {
-    field=sat(localNoise*.45+cells(uv+parallax*.7,4.0+mode*.7)*.45+grid(q,10.0+mode*2.0)*.38+tone*.22);
+    // Mixed organic: noise + cells + subtle grid — final family gets extra audio chaos
+    field=sat( localNoise*.42 + cells(uv+parallax*.65,3.8+mode*.65)*.42 + grid(q,9.0+mode*1.7)*.32 + tone*.18 + beat*.12 );
+    field = mod( field + (groove + airDrive)*0.25 , 1.05 );
   }
   float reactiveMask=0.0;
   if(reactLane < .5){
-    reactiveMask=ringField(q,6.0+audioA*26.0,t+slam);
-    field=sat(field*(.72+.55*audioA)+reactiveMask*(.18+.42*slam));
+    reactiveMask=ringField(q,5.8+audioA*28.0+beat*3.0,t+slam*.8);
+    field=sat(field*(.68+.58*audioA)+reactiveMask*(.22+.48*slam));
   } else if(reactLane < 1.5){
-    reactiveMask=grid(q+flow*(.06+wild*.18),8.0+audioA*30.0);
-    field=max(field,reactiveMask*(.25+.75*wild));
+    reactiveMask=grid(q+flow*(.05+wild*.2),7.5+audioA*32.0+groove*5.0);
+    field=max(field,reactiveMask*(.28+.72*wild+beat*.08));
   } else if(reactLane < 2.5){
-    reactiveMask=stripes(q.x+q.y+prevLum*.3,18.0+audioA*70.0,.05+.16*uRecipe5.z);
-    field=mix(field,1.0-field,reactiveMask*slam*.65);
+    // Diagonal stripe reactor: ONLY when stripe personality selected (rare); otherwise beat-synced radial pulse
+    if(stripeLane > 4.3){
+      reactiveMask=stripes(q.x+q.y+prevLum*.28,16.0+audioA*58.0,.045+.14*uRecipe5.z);
+      field=mix(field,1.0-field,reactiveMask*slam*.62);
+    } else {
+      float radp = smoothstep(.08,.0, abs(length(q)-(.22 + audioA*.38 + .09*sin(t*7.2 + beat*2.0))) );
+      reactiveMask = radp * (0.6 + 0.4*beat);
+      field = sat( field*0.7 + reactiveMask*1.1 + beat*0.12 );
+    }
   } else if(reactLane < 3.5){
-    reactiveMask=step(.5+.22*(uRecipe4.w-.5),noise((uv+flow*.2)*(10.0+audioA*34.0)+t*4.0));
-    field=sat(field*.52+reactiveMask*(.25+.75*flux)+prevEdge*.26);
+    reactiveMask=step(.48+.24*(uRecipe4.w-.5),noise((uv+flow*.18)*(9.5+audioA*36.0)+t*3.8+beat));
+    field=sat(field*.48+reactiveMask*(.28+.72*flux)+prevEdge*.28+beat*.06);
   } else if(reactLane < 4.5){
-    reactiveMask=smoothstep(.18,.0,abs(length(q)-(.18+.42*audioA+.12*sin(t*6.0))));
-    field=sat(max(field,reactiveMask)+slam*.34);
+    reactiveMask=smoothstep(.16,.0,abs(length(q)-(.16+.46*audioA+.1*sin(t*6.5+beat*1.8))));
+    field=sat(max(field,reactiveMask)+slam*.38 + beat*.10);
   } else if(reactLane < 5.5){
-    reactiveMask=cells(q+vec2(sin(t),cos(t))*(.08+audioA*.18),4.0+audioB*16.0);
-    field=mix(field,reactiveMask,sat(.28+audioA*.68));
+    reactiveMask=cells(q+vec2(sin(t*1.3+beat),cos(t*.95))*(.07+audioA*.2),3.8+audioB*17.0);
+    field=mix(field,reactiveMask,sat(.26+audioA*.72+beat*.1));
   } else if(reactLane < 6.5){
-    reactiveMask=smoothstep(.15,.82,abs(dot(normalize(q+vec2(.002)),normalize(flow+vec2(.003)))));
-    field=sat(field*.6+reactiveMask*(.22+.58*tone)+prevLum*.18);
+    reactiveMask=smoothstep(.13,.84,abs(dot(normalize(q+vec2(.0015)),normalize(flow+vec2(.0025)+laneVec*.2))));
+    field=sat(field*.55+reactiveMask*(.24+.55*tone)+prevLum*.16+groove*.10);
   } else {
-    reactiveMask=fbm(q*(3.0+audioA*9.0)+prevGrad*8.0+t*2.0);
-    field=sat(abs(field-reactiveMask)*1.35+camEdge*(.15+.45*audioB));
+    reactiveMask=fbm(q*(2.8+audioA*9.5)+prevGrad*7.5+t*1.9+beat*.4);
+    field=sat(abs(field-reactiveMask)*1.28 + camEdge*(.18+.42*audioB) + beat*.08);
   }
   float modeBias=fract(mode*.173+seed);
   if(mode < 1.5){
-    field=smoothstep(.22,.88,field);
+    field=smoothstep(.18,.86,field);
   } else if(mode < 2.5){
-    field=1.0-smoothstep(.2,.95,field);
+    field=1.0-smoothstep(.18,.93,field);
   } else if(mode < 3.5){
-    field=sat(field*.62+camEdge*.38);
+    field=sat(field*.58+camEdge*.42+beat*.06);
   } else if(mode < 4.5){
-    field=smoothstep(.36,.64,field);
+    field=smoothstep(.32,.66,field);
   } else if(mode < 5.5){
-    field=sat(abs(field-.5)*1.8);
+    field=sat(abs(field-.5)*1.95 + beat*.05);
   } else if(mode < 6.5){
-    field=sat(field*.45+depth*.35+prevLum*.2);
+    field=sat(field*.42+depth*.38+prevLum*.18+groove*.06);
   } else if(mode < 7.5){
-    field=sat(field*.75*(.45+.55*pulse)+camLum*.25);
+    field=sat(field*.72*(.42+.58*pulse+beat*.12)+camLum*.22);
   } else if(mode < 8.5){
-    field=step(.5+.18*(modeBias-.5),field);
+    field=step(.48+.2*(modeBias-.5),field);
   } else {
-    field=sat(field*.55+localNoise*.32+tone*.18);
+    field=sat(field*.52+localNoise*.34+tone*.16+air*.1);
   }
   field=sat(field);
 
-  float gate=smoothstep(.28,.88,field);
-  float spark=step(.88-.2*bright,noise((uv+flow*.13)*uRes*.028+t*5.0+seed*19.0))*(.1+.52*camEdge);
-  vec3 palA=palette(field+seed+reaction*.42,uRecipe1.x,uRecipe1.y);
-  vec3 palB=palette(depth+uRecipe2.z+bright*.55,uRecipe3.z,uRecipe4.w);
-  vec3 palC=palette(localNoise+prevLum*.5+seed*.31,uRecipe4.x,uRecipe4.y);
-  vec3 under=mix(palA,palB,.22+.48*uRecipe2.y);
-  under=modpal(under*(.3+1.5*gate+.48*drive01)+palC*(.06+.2*ent+.14*reaction)+spark*palB*.26,seed+tone);
-  under*=.28+1.16*gate+.24*vignette(p)+.14*reaction;
+  float gate=smoothstep(.26,.86,field);
+  float spark=smoothstep(.80,.92,noise((uv+flow*.12)*uRes*.026+t*4.8+seed*18.0+beat*1.2))*(.10+.40*camEdge+beat*.08);  // smoothstep + much less beat to kill flicker/white pops
+  vec3 palA=palette(field+seed+reaction*.38,uRecipe1.x,uRecipe1.y);
+  vec3 palB=palette(depth+uRecipe2.z+bright*.52,uRecipe3.z,uRecipe4.w);
+  vec3 palC=palette(localNoise+prevLum*.48+seed*.29+beat*.15,uRecipe4.x,uRecipe3.z);
+  // Effects now primarily modify the camera feed layer itself rather than bright separate overlays/underlays.
+  // Generated "under" is now a subtle modulator/tint on the camera, not a covering layer.
+  vec3 under=mix(palA,palB,.24+.46*uRecipe2.y);
+  under=modpal(under*(.28+1.55*gate+.52*drive01)+palC*(.05+.22*ent+.16*reaction)+spark*palB*.28,seed+tone+beat*.1);
+  // less pure "brighter on audio", more cross-channel + mod character (reduced audio coeffs)
+  under = vec3(
+    mod(under.r * (0.7 + 0.3*body), 1.02),
+    mod(under.g * (0.8 + 0.25*midb), 1.02),
+    mod(under.b * (0.9 + 0.2*airDrive), 1.02)
+  );
+  under*=.12+0.6*gate+.12*vignette(p)+.08*reaction+beat*.02;  // significantly dimmed so it doesn't cover camera
+  under = audioMutate(under, body, midb, airDrive, beat, groove, mutateAmt * pitchLevel * 0.6);  // color mutations ramp with pitch/tone activity (subtler)
 
   float posterLevels=2.0+floor(uRecipe5.z*8.0+drive01*3.0);
-  vec3 camWarped=mix(cam,poster(cam,posterLevels),uRecipe3.w*(.14+.28*reaction));
-  camWarped=mix(camWarped,1.0-camWarped.bgr,smoothstep(.8,.995,uRecipe5.w)*(.12+.34*reaction));
+  vec3 camWarped=mix(cam,poster(cam,posterLevels),uRecipe3.w*(.14+.18*reaction));  // reduced reaction
+  camWarped=mix(camWarped,1.0-camWarped.bgr,smoothstep(.8,.995,uRecipe5.w)*(.12+.22*reaction));
   camWarped=modpal(mix(camWarped,camWarped*mix(vec3(1.06),palB*1.45,.55),.18+.34*uRecipe4.x+.12*drive01),seed+camLum);
-  float camAlpha=sat(.34+uCameraBlend*(.22+.24*uRecipe4.y)+camEdge*(.16+.28*uRecipe3.x)+lum*.18-depth*.05-drive01*.08-wild*(.03+.1*uRecipe2.w)+slam*.04);
+  camWarped = audioMutate(camWarped, body*0.7+midb*0.3, midb, airDrive, beat*0.8, detail, mutateAmt * pitchLevel);
+  float colorAmt=sat(.14+.46*effectLevel+.20*pitchLevel+.16*beat+.12*drive01);
+  vec3 edgeTint=mix(palA,palB,sat(camEdge*.75+field*.25));
+  if(colorLane < .5){
+    camWarped=hueShift(camWarped,(audioA-audioB)*1.55*colorAmt+(seed-.5)*1.8);
+  } else if(colorLane < 1.5){
+    float lev=2.0+floor(mode*.42+beat*5.0+audioA*3.0);
+    camWarped=mix(camWarped,poster(camWarped,lev),colorAmt*.78);
+  } else if(colorLane < 2.5){
+    vec3 swapped=vec3(camWarped.g,camWarped.b,camWarped.r);
+    camWarped=mix(camWarped,swapped,smoothstep(.34,.86,beat+pitchLevel*.35)*(.42+.38*uRecipe5.w));
+  } else if(colorLane < 3.5){
+    camWarped=mix(camWarped,camWarped*(.72+edgeTint*1.25)+edgeTint*camEdge*.45,sat(camEdge*1.8+pitchLevel*.35)*colorAmt);
+  } else if(colorLane < 4.5){
+    float cut=step(.42+.22*(uRecipe4.x-.5),field+beat*.18);
+    camWarped=mix(camWarped,1.0-camWarped.bgr,cut*colorAmt*.65);
+  } else if(colorLane < 5.5){
+    float solar=smoothstep(.18,.82,abs(camLum-.5)*2.0+field*.35);
+    camWarped=mix(camWarped,abs(1.0-2.0*camWarped),solar*colorAmt*.72);
+  } else if(colorLane < 6.5){
+    float blockScale=5.0+floor(mode*1.2+audioA*8.0+beat*4.0);
+    vec2 blockUv=(floor(camUv*blockScale)+.5)/blockScale;
+    vec3 blockCam=camAt(blockUv);
+    camWarped=mix(camWarped,mix(blockCam,poster(blockCam,3.0+floor(audioB*5.0)),.55),colorAmt*(.34+.5*groove));
+  } else {
+    vec3 thresh=mix(palC,prev.bgr,.22+.58*feedbackLane/7.0);
+    float cMask=smoothstep(.24+.32*uRecipe4.x,.92,field+camEdge*.35+beat*.18);
+    camWarped=mix(camWarped,thresh,cMask*colorAmt*.82);
+  }
+  float camAlpha=sat(.34+uCameraBlend*(.22+.24*uRecipe3.z)+camEdge*(.16+.28*uRecipe3.x)+lum*.18-depth*.05-drive01*.08-wild*(.03+.1*uRecipe2.w)+slam*.04) * effectLevel;  // under/overlay visibility ramps with overall audio activity (volume+pitch+rhythm)
 
-  float veil=stripes((uv.x+uv.y)*(.8+uRecipe5.x)+field*.22,16.0+mode*3.0+highReact*34.0,.08+.18*uRecipe5.y);
-  float alphaA=sat(gate*(.34+.6*uRecipe2.w)+prevEdge*(.14+.46*uRecipe3.y)+pulse*.26);
-  float alphaB=sat(veil*(.28+.52*bright)+camEdge*.28+reaction*.22+spark*.24);
-  float overlayAlpha=sat(mix(alphaA,alphaB,uRecipe5.y)*(.34+.56*drive01)+wild*(.08+.22*uRecipe4.w)+snap*slam*.18);
-  if(mode < 1.5) overlayAlpha*=.72;
-  else if(mode < 2.5) overlayAlpha*=1.04;
-  else if(mode < 3.5) overlayAlpha*=1.38;
-  else if(mode < 4.5) overlayAlpha*=.74+.42*pulse;
-  else if(mode < 5.5) overlayAlpha*=1.18*smoothstep(.22,.78,field);
-  else if(mode < 6.5) overlayAlpha*=.66+.42*prevEdge;
-  else if(mode < 7.5) overlayAlpha*=.46+.7*camEdge;
-  else if(mode < 8.5) overlayAlpha*=1.08;
-  else overlayAlpha*=.82+.32*tone;
+  // Veil / overlay pattern: diagonal stripes only rarely + purposefully via stripeLane
+  float veil;
+  float veilSel = fract(uRecipe5.x * 7.3 + seed * 1.9 + stripeLane * .11);
+  if(veilSel < .14 && stripeLane > 4.4){
+    // purposeful diagonal only for stripe personalities, and only ~2% base probability
+    veil=stripes((uv.x+uv.y)*(0.78+uRecipe5.x*.6)+field*.2,14.0+mode*2.6+air*26.0,.065+.14*uRecipe5.y);
+  } else if(veilSel < .42){
+    // horizontal-ish bars (less annoying, audio reactive)
+    veil=stripes(uv.y*(9.0+mode*1.8+audioA*12.0)+t*1.3+field*.15,1.0,.07+.11*uRecipe5.y);
+  } else if(veilSel < .66){
+    // soft radial rings
+    veil=ringField(q*(.9+uRecipe5.x*.4), 5.5+mode*1.3+highReact*4.0, t*1.1+prevLum*.4)*.85 + .15;
+  } else {
+    // noise / organic grain veil
+    veil=sat( fbm((uv+flow*.04)*(2.8+mode*.7)+vec2(t*.6,seed*3.1))*1.1 + detail*.25 );
+  }
+  float alphaA=sat(gate*(.32+.62*uRecipe2.w)+prevEdge*(.12+.48*uRecipe3.y)+pulse*.24+beat*.10);
+  float alphaB=sat(veil*(.26+.54*bright)+camEdge*.26+reaction*.24+spark*.26+beat*.08);
+  float overlayAlpha=sat(mix(alphaA,alphaB,uRecipe5.y)*(.36+.54*drive01)+wild*(.07+.24*uRecipe4.w)+snap*slam*.2+beat*.06) * effectLevel;  // no overlay when no audio
+  if(mode < 1.5) overlayAlpha*=.68;
+  else if(mode < 2.5) overlayAlpha*=1.06;
+  else if(mode < 3.5) overlayAlpha*=1.42;
+  else if(mode < 4.5) overlayAlpha*=.72+.44*pulse+beat*.12;
+  else if(mode < 5.5) overlayAlpha*=1.22*smoothstep(.2,.8,field);
+  else if(mode < 6.5) overlayAlpha*=.62+.44*prevEdge;
+  else if(mode < 7.5) overlayAlpha*=.44+.72*camEdge;
+  else if(mode < 8.5) overlayAlpha*=1.1;
+  else overlayAlpha*=.8+.34*tone;
   overlayAlpha=sat(overlayAlpha);
-  vec3 overlay=palette(veil+prevLum+seed*.7,uRecipe2.x,uRecipe5.w);
-  overlay=modpal(mix(overlay,prev.bgr*(.94+bright*.82)+palA*.48,uRecipe4.z),seed+bright);
+  vec3 overlay=palette(veil+prevLum+seed*.68+beat*.12,uRecipe2.x,uRecipe5.w);
+  overlay=modpal(mix(overlay,prev.bgr*(.92+bright*.84)+palA*.5,uRecipe4.z),seed+bright+air*.1);
+  overlay*=.4 + .3*gate + .1*reaction;  // dim overlay so it doesn't cover camera feed
+  overlay = audioMutate(overlay, midb, airDrive, groove, beat, detail, mutateAmt * pitchLevel * 0.5);
 
-  vec3 layered=mix(under,camWarped,camAlpha);
-  layered=mix(layered,overlay,overlayAlpha);
-  layered=mix(layered,rawCam*(.56+.42*lum)+palA*.22,.06+.1*(1.0-overlayAlpha));
-  float feedbackPersonality=.75;
-  if(feedbackLane < .5) feedbackPersonality=.35+.7*lowReact;
-  else if(feedbackLane < 1.5) feedbackPersonality=.4+1.2*highReact;
-  else if(feedbackLane < 2.5) feedbackPersonality=.25+1.6*flux;
-  else if(feedbackLane < 3.5) feedbackPersonality=.15+1.8*slam;
-  else if(feedbackLane < 4.5) feedbackPersonality=.55+1.1*rhythm;
-  else if(feedbackLane < 5.5) feedbackPersonality=.3+1.4*prevEdge;
-  else if(feedbackLane < 6.5) feedbackPersonality=.3+1.3*camEdge;
-  else feedbackPersonality=.2+1.5*wild;
-  float feedbackWarp=(.004+.021*uRecipe1.w+.028*drive01)*(.24+.68*reaction+.42*wild)*feedbackPersonality;
-  vec3 displacedPrev=prevAt(sat2(uv+flow*feedbackWarp+prevGrad*(.035+.12*uRecipe5.x)+laneVec*(.004+.018*wild)));
-  float fb=sat(uFeedback*(.45+.18*feedbackPersonality)+.1*uRecipe5.w+.04*lowReact+.08*wild-.04*onset);
-  vec3 rec=mix(layered,displacedPrev*(.64+.24*fb)+layered*(.42+.24*reaction),.2+.28*fb);
-  rec=mix(rec,layered,.24+.32*onset+.1*drive01);
-  vec3 folded=fract(rec*(1.08+.22*bright+.14*drive01)+palette(seed+localNoise*.25,uRecipe3.x,uRecipe3.y)*(.032+.052*ent+.026*drive01));
-  rec=mix(rec,folded,.44+.22*drive01+.12*ent);
-  rec=mix(rec,layered,.08+.08*(1.0-overlayAlpha)+.12*onset);
-  rec=mix(rec,rawCam,.035+.06*uCameraBlend*(1.0-gate));
-  rec*=.58+.3*vignette(p)+.26*camEdge+.2*drive01;
+  // Composition lanes make presets differ by layer logic, not just by stronger/weaker warp.
+  vec3 layered = camWarped;
+  float edgeMask=sat(camEdge*1.65+prevEdge*.58);
+  float beatMask=smoothstep(.22,.9,reactiveMask+beat*.24+slam*.18);
+  float contourMask=smoothstep(.18,.82,abs(field-.5)*2.0+edgeMask*.28);
+  float blockMask=step(.5,blockHash(uv+flow*.02,vec2(6.0+mode*1.8,4.5+mode*1.35),uTime*(.28+beat*4.8+groove*1.4)));
+  float radialMask=smoothstep(.5,.03,abs(length(p)-(.16+.36*audioA+.08*sin(t*5.3+seed*6.0))));
+  float chosenMask=gate;
+  if(maskLane < .5) chosenMask=gate;
+  else if(maskLane < 1.5) chosenMask=edgeMask;
+  else if(maskLane < 2.5) chosenMask=beatMask;
+  else if(maskLane < 3.5) chosenMask=contourMask;
+  else if(maskLane < 4.5) chosenMask=blockMask;
+  else if(maskLane < 5.5) chosenMask=radialMask;
+  else if(maskLane < 6.5) chosenMask=sat(gate*.45+edgeMask*.55);
+  else chosenMask=sat(abs(field-reactiveMask)*1.35+beat*.14);
+  if(composeLane < .5){
+    layered=mix(camWarped,camWarped*(.76+under*.72)+palA*.08,chosenMask*camAlpha*.48);
+    layered=mix(layered,rawCam,.14+.10*(1.0-effectLevel));
+  } else if(composeLane < 1.5){
+    layered=mix(camWarped,overlay*(.62+.38*edgeTint)+camWarped*.28,edgeMask*overlayAlpha*.62);
+    layered=mix(layered,rawCam,.08);
+  } else if(composeLane < 2.5){
+    vec3 posterCam=poster(camWarped,2.0+floor(mode*.5+audioA*6.0+beat*4.0));
+    layered=mix(camWarped,posterCam*(.75+palB*.45),chosenMask*(.28+.5*beat)*effectLevel);
+  } else if(composeLane < 3.5){
+    vec3 contour=mix(palA,palC,contourMask);
+    layered=camWarped+contour*contourMask*(.12+.52*overlayAlpha);
+    layered=mix(layered,camWarped,1.0-effectLevel*.72);
+  } else if(composeLane < 4.5){
+    vec3 cut=mix(rawCam,overlay,beatMask);
+    layered=mix(camWarped,cut,beatMask*(.25+.62*slam+.2*rhythmLevel));
+  } else if(composeLane < 5.5){
+    vec3 echo=mix(prev,prev.bgr,.35+.45*pitchLevel);
+    layered=mix(camWarped,echo*(.58+.32*feedbackLane/7.0)+under*.18,sat((.18+.56*chosenMask)*effectLevel));
+  } else if(composeLane < 6.5){
+    vec3 blocks=mix(palC,poster(camWarped,3.0+floor(audioB*5.0)),.52+.28*blockMask);
+    layered=mix(camWarped,blocks,blockMask*(.2+.6*effectLevel));
+  } else {
+    vec3 lens=mix(camWarped*(.74+under*.42),overlay*(.5+.38*radialMask)+palA*.18,radialMask);
+    layered=mix(camWarped,lens,sat((radialMask*.6+gate*.22)*effectLevel));
+  }
+  layered=mix(layered,rawCam*(.62+.34*lum)+palA*.14,.035+.07*(1.0-overlayAlpha));
+  float feedbackPersonality=.72;
+  if(feedbackLane < .5) feedbackPersonality=.32+.72*body;
+  else if(feedbackLane < 1.5) feedbackPersonality=.38+1.25*airDrive;
+  else if(feedbackLane < 2.5) feedbackPersonality=.22+1.65*flux;
+  else if(feedbackLane < 3.5) feedbackPersonality=.12+1.85*slam;
+  else if(feedbackLane < 4.5) feedbackPersonality=.52+1.15*groove;
+  else if(feedbackLane < 5.5) feedbackPersonality=.28+1.45*prevEdge;
+  else if(feedbackLane < 6.5) feedbackPersonality=.28+1.35*camEdge;
+  else feedbackPersonality=.18+1.55*wild;
+  float feedbackMotion=warpPersonality;
+  if(composeLane > 4.5 && composeLane < 5.5) feedbackMotion=max(feedbackMotion,.34*effectLevel);
+  float feedbackWarp=(.0035+.014*uRecipe1.w+.026*drive01)*(.26+.7*reaction+.44*wild)*feedbackPersonality * volLevel * (.12+.88*feedbackMotion);
+  vec3 displacedPrev=prevAt(sat2(uv+flow*feedbackWarp+prevGrad*(.032+.13*uRecipe5.x)+laneVec*(.0035+.02*wild)+beat*flow*.015));
+  float fb=sat(uFeedback*(.42+.2*feedbackPersonality)+.1*uRecipe5.w+.035*body+.09*wild-.035*onset+beat*.06) * volLevel;  // feedback fades with volume presence
+  vec3 rec=mix(layered,displacedPrev*(.62+.26*fb)+layered*(.44+.22*reaction),(.18+.3*fb) * effectLevel);  // fade feedback contribution when low audio
+  rec=mix(rec,layered,.22+.34*onset+.09*drive01+beat*.04);
+  vec3 folded=fract(rec*(1.06+.24*bright+.16*drive01)+palette(seed+localNoise*.22+beat*.1,uRecipe3.x,uRecipe3.y)*(.03+.055*ent+.03*drive01));
+  rec=mix(rec,folded,.42+.24*drive01+.14*ent+beat*.03);
+  rec=mix(rec,layered,.07+.09*(1.0-overlayAlpha)+.14*onset+beat*.03);
+  rec=mix(rec,rawCam,.03+.065*uCameraBlend*(1.0-gate));
+  rec*=.56+.32*vignette(p)+.28*camEdge+.22*drive01+beat*.02;  // minimal beat to kill white-out blinks
+  rec = audioMutate(rec, body, airDrive, groove, beat, detail, mutateAmt * pitchLevel);  // heavy non-brightness mutation here, ramps with pitch/tone per recipe
   float y=luma(rec);
-  rec=mix(vec3(y),rec,1.75+.45*drive01+.28*bright);
-  rec=clamp((rec-.5)*(1.62+.58*drive01+.28*reaction)+.5,0.0,1.0);
-  rec=smoothstep(vec3(.09),vec3(.9),rec);
-  rec=pow(sat3(rec),vec3(.9+.08*tone-.07*drive01));
+  rec=mix(vec3(y),rec,1.20+.25*drive01+.15*bright+beat*.02);  // much less desat swing on loud audio
+  rec=clamp((rec-.5)*(1.25+.30*drive01+.12*reaction)+.5,0.0,1.0);  // significantly tamer contrast, no beat
+  rec=smoothstep(vec3(.085),vec3(.92),rec);
+  rec=pow(sat3(rec),vec3(.88+.09*tone-.08*drive01));
+
+  // Final cutoff: when audioPresence below threshold (effectLevel ~0), force completely unaltered plain camera feed.
+  // This matches the spirit of the old shader where effects only applied if uAudioFreq groups > n; otherwise pass-through.
+  // Warping is already un-applied via effectLevel scaling on warpAmt/parallax, feedback gated, layers gated.
+  rec = mix(rawCam, rec, effectLevel);  // at silence cutoff (effectLevel==0), ONLY plain unaltered camera feed; ramps up based on pitch/rhythm/volume per recipe-tuned levels
+
   outColor=vec4(sat3(rec),1.0);
 }`;
 
@@ -652,7 +758,7 @@ class NeonApp {
     this.cameraReady = false;
     this.hudVisible = true;
     this.pointerDown = null;
-    this.driveHold = null;
+    this.seedHold = null;
     this.baseRecipeCache = new Map();
     this.lastTap = null;
     this.pendingTapTimer = 0;
@@ -706,6 +812,13 @@ class NeonApp {
     return x >>> 0;
   }
   wordFloat(seed, serial, slot) { return this.recipeWord(seed, serial, slot) / 4294967295; }
+  mutateFloat(seed, serial) {
+    seed >>>= 0; serial >>>= 0;
+    if (this.wasm && this.wasm.recipe_mutate) {
+      return (this.wasm.recipe_mutate(seed, serial) >>> 0) / 4294967295;
+    }
+    return this.wordFloat(seed, serial, 47);
+  }
   mix32(x) {
     x >>>= 0;
     x ^= x >>> 16; x = Math.imul(x, 0x7feb352d) >>> 0;
@@ -729,22 +842,46 @@ class NeonApp {
     const motionLane = this.recipeWord(seed, serial, 104) % 8;
     const shapeLane = this.recipeWord(seed, serial, 105) % 8;
     const feedbackLane = this.recipeWord(seed, serial, 106) % 8;
+    const stripeLane = this.recipeWord(seed, serial, 107) % 7;
+    const composeLane = this.recipeWord(seed, serial, 112) % 8;
+    const colorLane = this.recipeWord(seed, serial, 113) % 8;
+    const maskLane = this.recipeWord(seed, serial, 114) % 8;
+    const warpLane = this.recipeWord(seed, serial, 115) % 8;
     recipe[0] = (family + .18 + recipe[0] * .64) / 20;
     recipe[1] = (mode + .16 + recipe[1] * .68) / 10;
     recipe[2] = Math.pow(recipe[2], .62);
     recipe[3] = Math.pow(recipe[3], .42);
     recipe[4] = Math.pow(recipe[4], .72);
     recipe[5] = .08 + recipe[5] * .92;
-    recipe[7] = Math.pow(recipe[7], .5);
+    recipe[7] = (composeLane + .12 + recipe[7] * .76) / 8;
     recipe[8] = (reactionLane + .12 + recipe[8] * .76) / 8;
     recipe[10] = recipe[10] < .33 ? recipe[10] * .42 : (recipe[10] < .66 ? .38 + recipe[10] * .22 : .72 + recipe[10] * .22);
-    recipe[12] = recipe[12] < .5 ? recipe[12] * .48 : .68 + recipe[12] * .28;
+    recipe[12] = (colorLane + .12 + recipe[12] * .76) / 8;
     recipe[13] = (motionLane + .1 + recipe[13] * .78) / 8;
     recipe[15] = Math.pow(recipe[15], .65);
-    recipe[16] = recipe[16] < .5 ? recipe[16] * .5 : .65 + recipe[16] * .3;
+    recipe[16] = (maskLane + .12 + recipe[16] * .76) / 8;
+    recipe[17] = (stripeLane * .73 + .07 + recipe[17] * .33) / 7;
     recipe[18] = (feedbackLane + .1 + recipe[18] * .78) / 8;
+    // bias a personality slot with the new WASM mutate word so different presets
+    // get very different amounts of the wild audio channel mutations (awesomer variety)
+    const mut = this.mutateFloat(seed, serial);
+    recipe[19] = (mut * 0.82 + recipe[19] * 0.18);
+
+    // Audio response parameters (recipe API for unique per-effect triggers).
+    // These control smoothstep bases for vol/rhythm/pitch levels in shader.
+    // Different presets will have effects (warp, field, color mutate, feedback, layers)
+    // activating at different audio conditions (volume, rhythm/tempo, pitch/tone).
+    // Breaking change to recipe schema ok per user.
+    const volBase = this.wordFloat(seed, serial, 108);
+    const rhythmBase = this.wordFloat(seed, serial, 109);
+    const pitchBase = this.wordFloat(seed, serial, 110);
+    recipe[6] = 0.25 + volBase * 0.32;   // volThresh (uRecipe1.z) - higher base for fan tolerance
+    recipe[10] = rhythmBase;             // rhythmSens (uRecipe2.z)
+    recipe[14] = pitchBase;              // pitchSens (uRecipe3.z)
+    recipe[20] = 0.12 + this.wordFloat(seed, serial, 111) * 0.55; // extra tone/overall bias (uRecipe5.x)
     recipe[20] = Math.pow(recipe[20], .78);
     recipe[21] = (shapeLane + .1 + recipe[21] * .78) / 8;
+    recipe[22] = (warpLane + .12 + recipe[22] * .76) / 8;
     recipe[23] = recipe[23] < .5 ? recipe[23] * .36 : .7 + recipe[23] * .24;
     return recipe.map(v => Math.max(0, Math.min(.999999, +v || 0)));
   }
@@ -769,7 +906,7 @@ class NeonApp {
       createdAt: typeof p.createdAt === 'string' ? p.createdAt : new Date().toISOString(),
       version: p.version || VERSION,
       schema: +p.schema || RECIPE_SCHEMA,
-      engine: p.engine || 'layered-reactive-v10.7'
+      engine: p.engine || 'layered-reactive-v10.8'
     };
   }
   baseRecipe(index) {
@@ -780,22 +917,49 @@ class NeonApp {
     const serial = (0x71070000 + index + 1 + Math.imul(seedOffset, 0x45d9f3b)) >>> 0;
     const recipe = this.makeRecipe(seed, serial);
     const wrap = (value, size) => ((value % size) + size) % size;
-    const family = wrap(Math.imul(index, 7) + Math.floor(index / 10) * 3 + Math.imul(seedOffset, 11), 20);
-    const mode = wrap(Math.imul(index, 3) + Math.floor(index / 20) + Math.floor(index / 5) + Math.imul(seedOffset, 7), 10);
-    const reactionLane = wrap(Math.imul(index, 5) + Math.floor(index / 4) + Math.imul(seedOffset, 3), 8);
-    const motionLane = wrap(Math.imul(index, 3) + Math.floor(index / 3) + Math.imul(seedOffset, 5), 8);
-    const shapeLane = wrap(Math.imul(index, 7) + Math.floor(index / 2) + Math.imul(seedOffset, 7), 8);
-    const feedbackLane = wrap(Math.imul(index, 11) + Math.floor(index / 6) + Math.imul(seedOffset, 9), 8);
+    const pair = wrap(Math.imul(index, 37) + Math.imul(seedOffset, 53), 200);
+    const family = pair % 20;
+    const mode = Math.floor(pair / 20);
+    const composeByMode = [0,1,2,3,4,5,6,7,0,7];
+    const colorByMode = [0,3,1,4,5,6,2,7,6,3];
+    const warpByMode = [0,0,1,1,2,3,2,5,1,7];
+    const reactionLane = wrap(family + Math.imul(mode, 3) + Math.floor(index / 5) + Math.imul(seedOffset, 5), 8);
+    const motionLane = wrap(Math.imul(family, 2) + mode + Math.floor(index / 4) + Math.imul(seedOffset, 7), 8);
+    const shapeLane = wrap(Math.imul(family, 5) + Math.imul(mode, 2) + Math.floor(index / 3) + Math.imul(seedOffset, 11), 8);
+    const feedbackLane = wrap(Math.imul(family, 7) + mode + Math.floor(index / 8) + Math.imul(seedOffset, 6), 8);
+    const composeLane = wrap(composeByMode[mode] + Math.floor(family / 7) + Math.imul(seedOffset, 3), 8);
+    const colorLane = wrap(colorByMode[mode] + family + Math.floor(index / 13) + Math.imul(seedOffset, 7), 8);
+    const maskLane = wrap(Math.imul(family, 3) + Math.imul(mode, 5) + Math.floor(index / 11) + Math.imul(seedOffset, 9), 8);
+    const warpLane = wrap(warpByMode[mode] + (family % 9 === 0 ? 1 : 0) + Math.imul(seedOffset, 5), 8);
+    const stripeLane = wrap(Math.imul(family, 5) + Math.imul(mode, 2) + Math.floor(index / 17) + Math.imul(seedOffset, 19), 7);
     recipe[0] = (family + .37 + recipe[2] * .2) / 20;
     recipe[1] = (mode + .29 + recipe[3] * .25) / 10;
+    recipe[7] = (composeLane + .18 + recipe[7] * .64) / 8;
     recipe[8] = (reactionLane + .18 + recipe[9] * .64) / 8;
+    recipe[12] = (colorLane + .16 + recipe[12] * .68) / 8;
     recipe[13] = (motionLane + .16 + recipe[14] * .68) / 8;
+    recipe[16] = (maskLane + .16 + recipe[16] * .68) / 8;
+    recipe[17] = (stripeLane * .73 + .07 + recipe[17] * .33) / 7;
     recipe[18] = (feedbackLane + .16 + recipe[19] * .68) / 8;
+    // bias with mutate for preset-to-preset audio reactivity personality
+    const mut = this.mutateFloat(seed, serial);
+    recipe[19] = (mut * 0.78 + recipe[19] * 0.22);
+
+    // Audio response params for baked presets - unique triggers per effect via index-based variation + words.
+    // vol/rhythm/pitch levels will cause different effects to ramp up on different audio characteristics.
+    const volBase = this.wordFloat(seed, serial, 108);
+    const rhythmBase = this.wordFloat(seed, serial, 109);
+    const pitchBase = this.wordFloat(seed, serial, 110);
+    recipe[6] = 0.22 + ((index % 7) / 12.0) + volBase * 0.35;  // volThresh, varied by index for baked diversity
+    recipe[10] = 0.05 + rhythmBase * 0.85;
+    recipe[14] = 0.08 + pitchBase * 0.75;
+    recipe[20] = 0.10 + ((Math.floor(index / 3) % 5) / 9.0) + this.wordFloat(seed, serial, 111) * 0.5;
     recipe[21] = (shapeLane + .18 + recipe[22] * .64) / 8;
+    recipe[22] = (warpLane + .16 + recipe[23] * .68) / 8;
     recipe[6] = (recipe[6] + ((index % 5) / 4)) * .5;
-    recipe[12] = (recipe[12] + ((Math.floor(index / 10) % 4) / 3)) * .5;
-    this.baseRecipeCache.set(cacheKey, recipe);
-    return recipe;
+    const finalized = recipe.map(v => Math.max(0, Math.min(.999999, +v || 0)));
+    this.baseRecipeCache.set(cacheKey, finalized);
+    return finalized;
   }
   reseedRecipe(recipe, seed, serial) {
     const offset = this.randomizerSeedOffset | 0;
@@ -804,7 +968,7 @@ class NeonApp {
     const remix = this.makeRecipe(remixSeed, ((serial >>> 0) + Math.imul(offset, 0xc2b2ae35)) >>> 0);
     const out = recipe.slice();
     for (let i=0;i<RECIPE_SIZE;i++) {
-      const lanePush = (i === 0 || i === 1 || i === 8 || i === 13 || i === 18 || i === 21) ? .82 : (.28 + .5 * remix[(i + 7) % RECIPE_SIZE]);
+      const lanePush = (i === 0 || i === 1 || i === 7 || i === 8 || i === 12 || i === 13 || i === 16 || i === 18 || i === 21 || i === 22) ? .82 : (.28 + .5 * remix[(i + 7) % RECIPE_SIZE]);
       out[i] = out[i] * (1 - lanePush) + remix[i] * lanePush;
     }
     return out.map(v => Math.max(0, Math.min(.999999, +v || 0)));
@@ -814,10 +978,15 @@ class NeonApp {
     return [
       Math.floor(Math.max(0, Math.min(.999999, +r[0] || 0)) * 20),
       Math.floor(Math.max(0, Math.min(.999999, +r[1] || 0)) * 10),
+      Math.floor(Math.max(0, Math.min(.999999, +r[7] || 0)) * 8),
       Math.floor(Math.max(0, Math.min(.999999, +r[8] || 0)) * 8),
+      Math.floor(Math.max(0, Math.min(.999999, +r[12] || 0)) * 8),
       Math.floor(Math.max(0, Math.min(.999999, +r[13] || 0)) * 8),
+      Math.floor(Math.max(0, Math.min(.999999, +r[16] || 0)) * 8),
       Math.floor(Math.max(0, Math.min(.999999, +r[18] || 0)) * 8),
-      Math.floor(Math.max(0, Math.min(.999999, +r[21] || 0)) * 8)
+      Math.floor(Math.max(0, Math.min(.999999, +r[21] || 0)) * 8),
+      Math.floor(Math.max(0, Math.min(.999999, +r[22] || 0)) * 8),
+      Math.floor(Math.max(0, Math.min(.999999, +r[17] || 0)) * 7)
     ];
   }
   laneDistance(a, b) {
@@ -846,7 +1015,7 @@ class NeonApp {
   forgePreset() {
     const serial = this.userPresets.length + 1;
     let seed = 0, recipe = null, bestScore = -1;
-    for (let attempt=0; attempt<18; attempt++) {
+    for (let attempt=0; attempt<32; attempt++) {
       const candidateSeed = this.mix32(this.randomSeed() ^ Math.imul(serial + attempt + 1, 0x9e3779b9) ^ Math.imul(this.randomizerSeedOffset | 0, 0xc2b2ae35));
       const candidateSerial = (serial + Math.imul(attempt + 1, 4099) + (this.randomSeed() & 0xffff)) >>> 0;
       const candidateRecipe = this.makeRecipe(candidateSeed, candidateSerial);
@@ -854,7 +1023,7 @@ class NeonApp {
       if (score > bestScore) { seed = candidateSeed; recipe = candidateRecipe; bestScore = score; }
     }
     const name = this.generatedName(seed, serial);
-    const p = { name, seed, serial, recipe, createdAt: new Date().toISOString(), version: VERSION, schema: RECIPE_SCHEMA, engine: 'layered-reactive-v10.7' };
+    const p = { name, seed, serial, recipe, createdAt: new Date().toISOString(), version: VERSION, schema: RECIPE_SCHEMA, engine: 'layered-reactive-v10.8' };
     this.userPresets.push(p);
     this.saveGenerated();
     this.effect = BASE_COUNT + this.userPresets.length - 1;
@@ -875,10 +1044,10 @@ class NeonApp {
     this.updateTitle();
   }
   exportGenerated() {
-    const blob = new Blob([JSON.stringify({ version: VERSION, schema: RECIPE_SCHEMA, engine: 'layered-reactive-v10.7', presets: this.userPresets }, null, 2)], {type:'application/json'});
+    const blob = new Blob([JSON.stringify({ version: VERSION, schema: RECIPE_SCHEMA, engine: 'layered-reactive-v10.8', presets: this.userPresets }, null, 2)], {type:'application/json'});
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
-    a.href = url; a.download = 'neon_recursion_v10_7_presets.json'; a.click();
+    a.href = url; a.download = 'neon_recursion_v10_8_presets.json'; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
   async importGenerated(file) {
@@ -1103,14 +1272,14 @@ class NeonApp {
     if (k==='c' || k==='C') { ev.preventDefault(); this.forgePreset(); return; }
     if (k==='ArrowRight') { ev.preventDefault(); this.nextEffect(); return; }
     if (k==='ArrowLeft') { ev.preventDefault(); this.prevEffect(); return; }
-    if (k==='ArrowUp') { ev.preventDefault(); this.adjustVisualDrive((ev.shiftKey ? 2 : 1) * DRIVE_KEY_STEP); return; }
-    if (k==='ArrowDown') { ev.preventDefault(); this.adjustVisualDrive((ev.shiftKey ? -2 : -1) * DRIVE_KEY_STEP); return; }
+    if (k==='ArrowUp') { ev.preventDefault(); this.adjustRandomizerSeed((ev.shiftKey ? 2 : 1)); return; }
+    if (k==='ArrowDown') { ev.preventDefault(); this.adjustRandomizerSeed((ev.shiftKey ? -2 : -1)); return; }
     if (k==='[') { ev.preventDefault(); this.shiftBank(-1); return; }
     if (k===']') { ev.preventDefault(); this.shiftBank(1); return; }
     if (k===',' || k==='<') { this.feedback=Math.max(.72,this.feedback-.01); return; }
     if (k==='.' || k==='>') { this.feedback=Math.min(.987,this.feedback+.01); return; }
-    if (k==='-' || k==='_') { ev.preventDefault(); this.adjustRandomizerSeed(-1); return; }
-    if (k==='=' || k==='+') { ev.preventDefault(); this.adjustRandomizerSeed(1); return; }
+    if (k==='-' || k==='_') { ev.preventDefault(); this.adjustVisualDrive((ev.shiftKey ? -2 : -1) * DRIVE_KEY_STEP); return; }
+    if (k==='=' || k==='+') { ev.preventDefault(); this.adjustVisualDrive((ev.shiftKey ? 2 : 1) * DRIVE_KEY_STEP); return; }
     if (k==='x' || k==='X') { ev.preventDefault(); this.flipAxisX=1-this.flipAxisX; this.bankFlash=1; return; }
     if (k==='y' || k==='Y') { ev.preventDefault(); this.flipAxisY=1-this.flipAxisY; this.bankFlash=1; return; }
     if (k==='z' || k==='Z') { ev.preventDefault(); this.flipAxisZ=1-this.flipAxisZ; this.bankFlash=1; return; }
@@ -1129,14 +1298,14 @@ class NeonApp {
     const dx=ev.clientX-down.x, dy=ev.clientY-down.y;
     const adx=Math.abs(dx), ady=Math.abs(dy);
     if (!down.gesture && ady > SWIPE_MIN_PX && ady > adx * SWIPE_RATIO) {
-      down.gesture = 'verticalDrive';
+      down.gesture = 'verticalSeed';
       this.clearPendingTap();
       this.lastTap = null;
-      this.startVisualDriveHold(dy < 0 ? 1 : -1);
+      this.startRandomizerSeedHold(dy < 0 ? 1 : -1);
     }
-    if (down.gesture === 'verticalDrive') {
+    if (down.gesture === 'verticalSeed') {
       const dir = dy < 0 ? 1 : -1;
-      if (this.driveHold) this.driveHold.direction = dir;
+      if (this.seedHold) this.seedHold.direction = dir;
       ev.preventDefault();
     }
   }
@@ -1151,9 +1320,9 @@ class NeonApp {
 
     const horizontalSwipe = adx > SWIPE_MIN_PX && adx > ady * SWIPE_RATIO;
     const verticalSwipe = ady > SWIPE_MIN_PX && ady > adx * SWIPE_RATIO;
-    if (down.gesture === 'verticalDrive' || verticalSwipe) {
-      this.stopVisualDriveHold();
-      if (!down.gesture) this.adjustVisualDrive(dy < 0 ? DRIVE_KEY_STEP * 2.5 : -DRIVE_KEY_STEP * 2.5);
+    if (down.gesture === 'verticalSeed' || verticalSwipe) {
+      this.stopRandomizerSeedHold();
+      if (!down.gesture) this.adjustRandomizerSeed(dy < 0 ? 1 : -1);
       return;
     }
     if (horizontalSwipe) {
@@ -1167,7 +1336,7 @@ class NeonApp {
   onPointerCancel(ev) {
     if (this.pointerDown?.id === ev.pointerId) {
       this.pointerDown = null;
-      this.stopVisualDriveHold();
+      this.stopRandomizerSeedHold();
     }
   }
   clearPendingTap() {
@@ -1198,32 +1367,41 @@ class NeonApp {
     if (flash) this.bankFlash = Math.max(this.bankFlash, .35);
   }
   adjustRandomizerSeed(delta) {
+    if (!delta) return;
     this.randomizerSeedOffset = (this.randomizerSeedOffset + delta) | 0;
     this.baseRecipeCache.clear();
     this.bankFlash = 1;
     this.clearFeedback();
     this.updateTitle();
   }
-  startVisualDriveHold(direction) {
-    if (this.driveHold) {
-      this.driveHold.direction = direction;
+  startRandomizerSeedHold(direction) {
+    if (this.seedHold) {
+      this.seedHold.direction = direction;
       return;
     }
-    this.driveHold = { direction, last:performance.now(), raf:0 };
+    this.seedHold = { direction, last:performance.now(), raf:0, carry:0, changed:false };
     const tick = (now) => {
-      if (!this.driveHold) return;
-      const dt = Math.min(.08, Math.max(0, (now - this.driveHold.last) / 1000));
-      this.driveHold.last = now;
-      this.adjustVisualDrive(this.driveHold.direction * DRIVE_HOLD_UNITS_PER_SEC * dt, false);
-      this.bankFlash = Math.max(this.bankFlash, .22);
-      this.driveHold.raf = requestAnimationFrame(tick);
+      if (!this.seedHold) return;
+      const dt = Math.min(.08, Math.max(0, (now - this.seedHold.last) / 1000));
+      this.seedHold.last = now;
+      this.seedHold.carry += this.seedHold.direction * SEED_HOLD_UNITS_PER_SEC * dt;
+      const whole = this.seedHold.carry > 0 ? Math.floor(this.seedHold.carry) : Math.ceil(this.seedHold.carry);
+      if (whole) {
+        this.seedHold.carry -= whole;
+        this.adjustRandomizerSeed(whole);
+        this.bankFlash = Math.max(this.bankFlash, .35);
+        this.seedHold.changed = true;
+      }
+      this.seedHold.raf = requestAnimationFrame(tick);
     };
-    this.driveHold.raf = requestAnimationFrame(tick);
+    this.seedHold.raf = requestAnimationFrame(tick);
   }
-  stopVisualDriveHold() {
-    if (!this.driveHold) return;
-    cancelAnimationFrame(this.driveHold.raf);
-    this.driveHold = null;
+  stopRandomizerSeedHold() {
+    if (!this.seedHold) return;
+    const hold = this.seedHold;
+    cancelAnimationFrame(hold.raf);
+    this.seedHold = null;
+    if (!hold.changed) this.adjustRandomizerSeed(hold.direction);
   }
   selectBankSlot(n) { const e=this.keyBank*BANK_SIZE+n; if (e < this.totalEffects()) { this.effect=e; this.updateTitle(); } }
   setHUDVisible(visible) {
@@ -1465,7 +1643,7 @@ class NeonApp {
   nextEffect() { this.effect=(this.effect+1)%this.totalEffects(); this.keyBank=Math.floor(this.effect/BANK_SIZE); this.bankFlash=.45; this.updateTitle(); }
   prevEffect() { this.effect=(this.effect-1+this.totalEffects())%this.totalEffects(); this.keyBank=Math.floor(this.effect/BANK_SIZE); this.bankFlash=.45; this.updateTitle(); }
   clearFeedback() { if (!this.gl || !this.fbos) return; const gl=this.gl; for (const f of this.fbos) { gl.bindFramebuffer(gl.FRAMEBUFFER,f); gl.clearColor(0,0,0,1); gl.clear(gl.COLOR_BUFFER_BIT); } gl.bindFramebuffer(gl.FRAMEBUFFER,null); }
-  updateTitle() { document.title = `Neon V10.7 ${this.effect+1}/${this.totalEffects()} — ${this.currentName()}`; }
+  updateTitle() { document.title = `Neon V10.8 ${this.effect+1}/${this.totalEffects()} — ${this.currentName()}`; }
 
   updateAudio(t) {
     const a = this.audio;
@@ -1484,13 +1662,13 @@ class NeonApp {
       const centroid=sum>1e-9 ? weighted/(sum*this.freq.length) : .0;
       a[7]=Math.min(1, Math.pow(centroid, .55));
       a[8]=Math.min(1, peakI/this.freq.length);
-      a[9]=Math.min(1, Math.pow(flux*1.9, .47));
-      a[10]=Math.min(1, Math.pow(Math.max(0, a[9]-.08)*2.4, .5));
+      a[9]=Math.min(1, Math.pow(flux*1.6, .55));  // less spiky
+      a[10]=Math.min(1, Math.pow(Math.max(0, a[9]-.12)*1.8, .6));
       const energy=(a[0]+a[1]+a[2]+a[3]+a[4]+a[5]+a[6])/7;
       const now=performance.now();
       this._beatPhase = this._beatPhase || 0;
       this._lastBeat = this._lastBeat || 0;
-      if (a[10]>.35 && now-this._lastBeat>130) { this._beatPhase=1; this._lastBeat=now; }
+      if (a[10]>.42 && now-this._lastBeat>140) { this._beatPhase=1; this._lastBeat=now; }  // higher threshold, less trigger happy
       this._beatPhase *= .92;
       a[11]=Math.min(1,this._beatPhase);
       a[12]=Math.min(1, peak/(sum/Math.max(1,this.freq.length)+1e-6)*.035);
@@ -1501,7 +1679,7 @@ class NeonApp {
       a[15]=Math.min(1, entropy/Math.log(this.freq.length));
       this.prevFreq.set(this.freq);
     }
-    for(let i=0;i<16;i++) this.audioSmooth[i] = this.audioSmooth[i]*0.78 + a[i]*0.22;
+    for(let i=0;i<16;i++) this.audioSmooth[i] = this.audioSmooth[i]*0.95 + a[i]*0.05;  // even slower to reduce sensitivity and jitter
   }
 
   uploadCamera() {
@@ -1557,7 +1735,7 @@ class NeonApp {
     if (!this.hudVisible) return;
     const b0=this.keyBank*BANK_SIZE+1, b1=Math.min(this.totalEffects(),b0+9);
     const rec = this.isRecording() ? ' &nbsp; <span class="dim">recording:</span> MP4' : '';
-    this.hud.innerHTML = `<b>${VERSION}</b><br>${this.effect+1}/${this.totalEffects()}: ${this.currentName()}<br><span class="dim">Number keys:</span> ${b0}..${b1} &nbsp; <span class="dim">generated:</span> ${this.userPresets.length} &nbsp; <span class="dim">drive:</span> ${this.intensity.toFixed(2)} &nbsp; <span class="dim">seed:</span> ${this.randomizerSeedOffset}${rec}<br><span class="dim">audio ${this.audioInputLabel()}:</span> bass ${this.audioSmooth[1].toFixed(2)} mid ${this.audioSmooth[3].toFixed(2)} treble ${this.audioSmooth[5].toFixed(2)} flux ${this.audioSmooth[9].toFixed(2)} rhythm ${this.audioSmooth[11].toFixed(2)}<br><span class="dim">Up/down or vertical swipe-hold drive, -/= reseed randomizers, click/tap/C forge, double/Space MP4 rec, [/] banks, F fullscreen, X/Y/Z flips, H HUD</span>`;
+    this.hud.innerHTML = `<b>${VERSION}</b><br>${this.effect+1}/${this.totalEffects()}: ${this.currentName()}<br><span class="dim">Number keys:</span> ${b0}..${b1} &nbsp; <span class="dim">generated:</span> ${this.userPresets.length} &nbsp; <span class="dim">drive:</span> ${this.intensity.toFixed(2)} &nbsp; <span class="dim">seed:</span> ${this.randomizerSeedOffset}${rec}<br><span class="dim">audio ${this.audioInputLabel()}:</span> bass ${this.audioSmooth[1].toFixed(2)} mid ${this.audioSmooth[3].toFixed(2)} treble ${this.audioSmooth[5].toFixed(2)} flux ${this.audioSmooth[9].toFixed(2)} rhythm ${this.audioSmooth[11].toFixed(2)}<br><span class="dim">Up/down or vertical swipe-hold reseed (seed offset), -/= drive, click/tap/C forge, double/Space MP4 rec, [/] banks, F fullscreen, X/Y/Z flips, H HUD</span>`;
   }
 }
 

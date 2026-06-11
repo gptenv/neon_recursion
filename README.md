@@ -4,7 +4,7 @@
 > Stop immediately if you feel discomfort, dizziness, eye strain, nausea, or any
 > seizure-related symptoms.
 
-# Neon Recursion WebGL/WASM V10.7
+# Neon Recursion WebGL/WASM V10.8
 
 Launch the Neon Recusion app (click this link): [https://def.s.gy/neon-recursion](https://def.s.gy/neon-recursion)
 
@@ -12,11 +12,9 @@ Expanded URL: [https://gptenv.github.io/neon_recursion/](https://gptenv.github.i
 
 Preview URL: [https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html](https://htmlpreview.github.io/?https://raw.githubusercontent.com/gptenv/neon_recursion/refs/heads/main/index.html)
 
-Version: `webgl-wasm-v10.7-2026-06-10`
+Version: `webgl-wasm-v10.8-2026-06-stripefix-reactive`
 
-This is the browser-native WebGL/WASM Touchstone port with a Makefile fix for macOS/Homebrew environments where the default `clang` does **not** include a WebAssembly backend.
-
-The package already includes a prebuilt `touchstone.wasm`. Normal use does not require rebuilding it.
+This is the browser-native WebGL/WASM Touchstone port. The Makefile builds `touchstone.wasm`, so use a wasm32-capable clang such as Homebrew LLVM on macOS.
 
 ## Run
 
@@ -51,16 +49,15 @@ If GitHub asks for a Pages source, choose **GitHub Actions** in
 
 ## Safe make workflow
 
-This now works even if your system `clang` cannot compile `--target=wasm32`:
+The app is expected to build from source. On this machine, source the shell profile first so Homebrew LLVM is on PATH:
 
 ```bash
+source ~/.profile
 make clean
 make
 ```
 
-`make clean` intentionally keeps the bundled `touchstone.wasm`.
-
-Use this only when you actually want to rebuild the WASM module:
+`make clean` removes `touchstone.wasm`; `make` rebuilds it from `src/touchstone.c` and validates the bundle. Use this when you explicitly want to force just the WASM target:
 
 ```bash
 make rebuild-wasm
@@ -76,7 +73,7 @@ export PATH="/usr/local/opt/llvm/bin:$PATH"      # Intel Homebrew
 make rebuild-wasm
 ```
 
-`make distclean` removes the bundled `touchstone.wasm`; `make clean` does not.
+`make distclean` currently behaves the same as `make clean`.
 
 ## Controls
 
@@ -97,11 +94,11 @@ Y               toggle Y-axis reflection / mirror mode, left-right flip; ON by d
 X               toggle X-axis reflection / vertical flip; ON by default
 Z               toggle Z-axis half-turn / 180-degree camera flip; OFF by default
 R               clear recursive feedback buffer
-Up / Down       visual drive: stronger/weaker warping, colour, depth, and reactions
+Up / Down       reseed randomizers (change live seed offset for baked + forged presets)
 Vertical swipe
-and hold        continuously raise/lower visual drive
+and hold        continuously change the randomizer seed offset
 , / .           feedback memory
-- / =           decrement/increment the randomizer seed offset
+- / =           adjust drive (warping, colour, depth, reactions)
 ```
 
 Generated presets remain saved in browser `localStorage` under the original v10 key for compatibility:
@@ -111,13 +108,15 @@ neon_recursion_touchstone_v107_presets
 ```
 
 
-## V10.7 layered reactive engine
+## V10.8 layered reactive engine
 
-V10.7 changes generated preset recipes to a new 24-value schema. The random forger now drives layered underlays, camera-feed displacement, previous-frame displacement, overlay masks, chromatic splitting, pseudo-alpha compositing, depth/parallax fields, palette behaviour, and audio/video reaction weighting. The shader keeps the readable V10 camera structure but restores the saturated recursive contrast, brighter colour cycling, stronger feedback displacement, and more obvious audio/video motion. Recipes now select distinct audio reaction lanes, motion lanes, shape transforms, mask reactions, and feedback personalities. The 200 baked presets were regenerated and remapped through a mixed family/mode recipe permutation so adjacent number-key slots produce more distinct looks.
+V10.8 uses a 24-value recipe schema. The random forger drives layered underlays, camera-feed displacement, previous-frame displacement, overlay masks, chromatic splitting, pseudo-alpha compositing, depth/parallax fields, palette behaviour, and audio/video reaction weighting. The shader keeps the readable V10 camera structure while restoring saturated recursive contrast, brighter colour cycling, stronger feedback displacement, and visible audio/video motion. Recipes select distinct audio reaction lanes, motion lanes, composition modes, color transforms, mask reactions, warp personalities, and feedback personalities. The 200 baked presets are regenerated through a mixed family/behavior recipe permutation so adjacent number-key slots produce more distinct looks.
 
-The `-` and `=` keys decrement/increment a live randomizer seed offset. The offset reseeds baked and generated recipes in place and also feeds future forged presets. New forged presets still use browser entropy and are chosen from multiple random candidates biased toward recipe-lane distance from existing presets.
+V10.8 reworks the reactivity logic (richer body/air/beat/groove/detail drives, stronger onset/flux/groove response) and all 20 field families + lane behaviors for significantly more interesting, varied visuals. Diagonal stripe artifacts (the previous accidental interlacing-like x+y patterns) are gated behind an explicit stripe personality lane. The 200 baked + future forged presets use refreshed composition, color, mask, motion, feedback, and warp lanes so only explicit lens/warp personalities bend the camera layer heavily; other presets react through recolor, edge masks, block/poster changes, beat cutouts, feedback echo, contour bloom, and palette mutation.
 
-The Up/Down keys and vertical swipe-hold control visual drive. Drive has a broad range and visibly changes warp amplitude, colour pressure, feedback behaviour, depth, overlay intensity, and audio/video reaction gain.
+The `-` and `=` keys adjust visual drive (warp amplitude, colour pressure, feedback behaviour, depth, overlay intensity, and audio/video reaction gain). Drive has a broad range (0..6).
+
+The Up/Down keys and vertical swipe-hold change the live randomizer seed offset. The offset reseeds baked and generated recipes in place and also feeds future forged presets. New forged presets still use browser entropy and are chosen from multiple random candidates biased toward recipe-lane distance from existing presets. Holding or swiping vertically scrubs the seed offset continuously for live auditioning of variations.
 
 ## Fullscreen and recording behaviour
 

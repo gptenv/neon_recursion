@@ -30,3 +30,15 @@ __attribute__((export_name("recipe_family")))
 uint32_t recipe_family(uint32_t seed, uint32_t serial) {
     return recipe_word(seed, serial, 31u) % 24u;
 }
+
+/* New: provides a "glitch/mutate personality" word for audio-reactive color
+   channel twisting strength. This lets different presets have very different
+   amounts of the wild audio-driven mutations (some subtle, some full-on crazy
+   like the classic filter), making the whole set of effects way more awesome
+   and varied. */
+__attribute__((export_name("recipe_mutate")))
+uint32_t recipe_mutate(uint32_t seed, uint32_t serial) {
+    uint32_t x = recipe_word(seed, serial, 47u);
+    x ^= rotl32(x * 0x9e3779b9u, 13);
+    return mix32(x ^ (serial * 0x85ebca6bu));
+}
